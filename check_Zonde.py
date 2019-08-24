@@ -5,7 +5,8 @@ try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
 except:
-    os.system('sh ./for_work/install_pip3_and_pybufrkit.sh')
+    print("установите библиотеки и перезапустите скрипт")
+    exit()
 
 
 begin_time = time.time()
@@ -36,11 +37,11 @@ else:
 # получаем файлы из папки "./" и список проверненых файлов из файла ckeking_fails
 try:
     files = os.listdir(path="./")
-    if not os.path.isfile('for_work/ckeking_fails'):
-        f = open('for_work/ckeking_fails', 'a')
+    if not os.path.isfile('for_work/cheking_fails'):
+        f = open('for_work/cheking_fails', 'a')
         f.close()
-    with open('for_work/ckeking_fails', 'r') as c:
-        if os.stat("for_work/ckeking_fails").st_size != 0:
+    with open('for_work/cheking_fails', 'r') as c:
+        if os.stat("for_work/cheking_fails").st_size != 0:
             files_were_check_for_mistakes = c.read().split(';')
         else:
             files_were_check_for_mistakes = []
@@ -66,7 +67,7 @@ for file_name in files:
 # декодируем burf в юникод
     try:
         decoder = Decoder()
-        with open(f'07/{file_name}', 'rb') as ins: #
+        with open(f'./{file_name}', 'rb') as ins: #
             bufr_message = decoder.process(ins.read())
         json_data = FlatJsonRenderer().render(bufr_message)
     except:
@@ -88,7 +89,7 @@ for file_name in files:
         print(f'ошибка в файле {file_name}, значение оборудования не занесено в базу')
         file_with_mistake.append((f'{file_name}, оборудования не занесено в базу'))
     
-    with open('for_work/ckeking_fails', 'a') as c:
+    with open('for_work/cheking_fails', 'a') as c:
         c.write(';'.join(files_were_check_for_mistakes))
 
 # записываем базу в файл date_ugms и indexs, файлы обработаные с ошибками для дальнейшего использования
@@ -141,7 +142,7 @@ string = '{:>16}|'.format('срок')
 for i in range(1,32):
     string += '{:^9}|'.format(i)
 
-with open('отчет_по_радиозондам_месяц.txt', 'a') as f:
+with open('отчет_по_радиозондам_за_месяц.txt', 'a') as f:
     for ugms_stantion in ugms:
         f.write(f'{ugms_stantion}\n{string}\n')
         for index_station in ugms[ugms_stantion]:
@@ -171,5 +172,5 @@ with open('отчет_по_радиозондам_месяц.txt', 'a') as f:
 
 
 end_time = int(time.time() - begin_time)
-print('проверено файлов: {}, за {:02d}:{:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time%3600,end_time%600,end_time%60))
+print('проверено файлов: {}, за {:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time%600,end_time%60))
 
