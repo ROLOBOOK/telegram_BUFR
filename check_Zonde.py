@@ -1,6 +1,12 @@
-from pybufrkit.renderer import FlatJsonRenderer
-from pybufrkit.decoder import Decoder
+# !/usr/bin/env python3
 import os, time, pickle
+
+try:
+    from pybufrkit.renderer import FlatJsonRenderer
+    from pybufrkit.decoder import Decoder
+except:
+    os.system('sh ./for_work/install_pip3_and_pybufrkit.sh')
+
 
 begin_time = time.time()
 # индексы  имена станций и угмс
