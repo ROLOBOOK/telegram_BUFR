@@ -5,11 +5,20 @@ try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
 except:
-    print("установите библиотеки и перезапустите скрипт")
+    print("установите библиотеки install_pip3_and_pybufrkit.sh из папки for_work и перезапустите скрипт")
     exit()
 
 
+def mkdir(name):
+    if not os.path.exists(name):
+        os.mkdir(name)
+        
+# проверяем если папки    'check_telegram', 'file_with_mistake', 'for_work' создаем если нет
+for dir_name in ('check_telegram', 'file_with_mistake'):
+    mkdir(dir_name)
+
 begin_time = time.time()
+
 # индексы  имена станций и угмс
 if not os.path.isfile('for_work/date_ugms.pkl'):
     try:
@@ -34,18 +43,11 @@ else:
     with open('for_work/indexs.pkl', 'rb') as f:
         indexs = pickle.load(f)
 
-# получаем файлы из папки "./" и список проверненых файлов из файла ckeking_fails
+# получаем файлы из папки "./" 
 try:
-    files = os.listdir(path="./")
-    if not os.path.isfile('for_work/cheking_fails'):
-        f = open('for_work/cheking_fails', 'a')
-        f.close()
-    with open('for_work/cheking_fails', 'r') as c:
-        if os.stat("for_work/cheking_fails").st_size != 0:
-            files_were_check_for_mistakes = c.read().split(';')
-        else:
-            files_were_check_for_mistakes = []
-    files = [file for file in files if file[-3:] == 'bin' and file[:5] in indexs]
+#     files = os.listdir(path="./")
+    files = [file for file in os.listdir(path="./") if file[-3:] == 'bin' and file[:5] in indexs]
+    files_were_check_for_mistakes = []
     file_with_mistake = []
 except:
     print("ошибка получения списков файлов для расшифровки")
@@ -54,16 +56,12 @@ except:
 #поиск типов радиозондов, вывод в файл
 
 for file_name in files:
-#     провряем был ли раньше проверен этот файл, если да пропускаем итерацию если нет заносим его в базу
-    if file_name in files_were_check_for_mistakes:
-        continue
     files_were_check_for_mistakes.append(file_name)
 #     выводи сколько проверно файлов и прошло времени
     if len(files_were_check_for_mistakes) % 10 == 0:
         end_time = int(time.time() - begin_time)
-        print('проверено файлов: {}, за {:02d}:{:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time%3600,end_time%600,end_time%60))
+        print('проверено файлов: {}, за {:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time//600,end_time%60))
         
-
 # декодируем burf в юникод
     try:
         decoder = Decoder()
@@ -73,6 +71,7 @@ for file_name in files:
     except:
         print(f'{file_name} не декодирован')
         file_with_mistake.append((f'{file_name}, не декодирован'))
+        os.rename(file_name, f'./file_with_mistake/{file_name}')        
         continue
 
 # записываем в словарь информацию о радиозонде из телеграммы 
@@ -88,9 +87,11 @@ for file_name in files:
     except:
         print(f'ошибка в файле {file_name}, значение оборудования не занесено в базу')
         file_with_mistake.append((f'{file_name}, оборудования не занесено в базу'))
-    
-    with open('for_work/cheking_fails', 'a') as c:
-        c.write(';'.join(files_were_check_for_mistakes))
+        os.rename(file_name, f'./file_with_mistake/{file_name}')
+        continue
+
+#     перемещаем проверенный фаыл в папку check_telegramm
+    os.rename(file_name, f'./check_telegram/{file_name}')
 
 # записываем базу в файл date_ugms и indexs, файлы обработаные с ошибками для дальнейшего использования
 with open('for_work/date_ugms.pkl', 'wb') as f:
@@ -98,12 +99,11 @@ with open('for_work/date_ugms.pkl', 'wb') as f:
     
 with open('for_work/indexs.pkl', 'wb') as f:
     pickle.dump(indexs,f)
-
-with open('for_work/file_with_mistake','a') as f:
-    f.write(';'.join(file_with_mistake))
     
-# with open('for_work/ckeking_fails.pkl', 'wb') as f:
-#     pickle.dump(files_were_check_for_mistakes, f)
+if file_with_mistake:
+    with open('file_with_mistake','a') as f:
+        f.write(';'.join(file_with_mistake), sep='\n')
+    
     
 # считаем количество типов радиозондов по станциям и по УГМС
 
@@ -170,7 +170,5 @@ with open('отчет_по_радиозондам_за_месяц.txt', 'a') as 
         f.write(f'По УГМС {ugms_stantion} всего: {s[:-2]}\n\n')
         
 
-
 end_time = int(time.time() - begin_time)
-print('проверено файлов: {}, за {:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time%600,end_time%60))
-
+print('проверено файлов: {}, за {:02d}:{:02d}'.format(len(files_were_check_for_mistakes),end_time//600,end_time%60))
