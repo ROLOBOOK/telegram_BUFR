@@ -94,8 +94,8 @@ ENGINE = InnoDB;
 -- -----------------------------------------------------
 -- Table `tsao`.`table1`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsao`.`table1` (
-  `content_telegramm` INT NOT NULL,
+CREATE TABLE IF NOT EXISTS `tsao`.`content_telegram` (
+  `id` INT NOT NULL auto_increment,
   `Stations_numberStation` INT NOT NULL,
   `date` DATETIME NULL,
   `time` FLOAT NULL,
@@ -108,7 +108,7 @@ CREATE TABLE IF NOT EXISTS `tsao`.`table1` (
   `dLat` FLOAT NULL,
   `dLon` FLOAT NULL,
   `Flags` VARCHAR(45) NULL,
-  PRIMARY KEY (`content_telegramm`),
+  PRIMARY KEY (`id`),
   INDEX `fk_table1_Stations1_idx` (`Stations_numberStation` ASC),
   CONSTRAINT `fk_table1_Stations1`
     FOREIGN KEY (`Stations_numberStation`)
