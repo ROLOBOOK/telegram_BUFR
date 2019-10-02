@@ -104,11 +104,28 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
 # Stations_numberStation date time  P T Td H D V dLat dLon Flags
 
 
-
-# получаем файлы из папки "./" 
+# получаем индексы станций из базы
 try:
+    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'tsao', charset="utf8")
+    cursor = conn.cursor()
+    cursor.execute("SELECT numberStation FROM tsao.Stations")
+
+# # Получаем данные.
+    indexs_stations = [i[0] for i in cursor.fetchall()]
+    
+except Exception as ex:
+    print(ex)
+
+# Разрываем подключение.
+finally:
+    conn.close()
+    
+    
+# получаем файлы из папки "./" 
+
 #     files = os.listdir(path="./")
-    files = [file for file in os.listdir(path="./") if file[-3:] == 'bin']
+try:
+    files = [file for file in os.listdir(path="../07/") if file[-3:] == 'bin' and int(file[:5]) in indexs_stations]
 except:
     print("ошибка получения списков файлов для расшифровки")
 
