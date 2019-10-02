@@ -48,39 +48,36 @@ ENGINE = InnoDB;
 -- Table `tsao`.`releaseZonde`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tsao`.`releaseZonde` (
-  `idRelease` INT NOT NULL,
+  `idRelease` INT NOT NULL auto_increment,
   `Stations_numberStation` INT NOT NULL,
   `date` DATETIME NULL,
-  `time` DATETIME NULL,
   `coordinateStation` VARCHAR(45) NULL,
-  `device` VARCHAR(45) NULL,
-  `height` VARCHAR(45) NULL,
-  `numberOfWindShearLevels` VARCHAR(45) NULL,
-  `numberOfObservations` VARCHAR(45) NULL,
-  `numberSensing` VARCHAR(45) NULL,
-  `identificationOfObservers` VARCHAR(45) NULL,
-  `ground-baseRadiosondeSignalReceptionSystem` VARCHAR(45) NULL,
-  `antennaHeightAboveSupportLevel` VARCHAR(45) NULL,
-  `amendmentToTheOrientationOfTheAzimuth` VARCHAR(45) NULL,
-  `correctionToTheOrientationOfTheCoenerOfTheSeat` VARCHAR(45) NULL,
-  `radarDome` VARCHAR(45) NULL,
-  `methodForDeterminingGeopotentialHeight` VARCHAR(45) NULL,
-  `versionPO` VARCHAR(45) NULL,
-  `radiosondeSerialNumber` VARCHAR(45) NULL,
-  `correctionAlgorithimForHumidityMeasurement` VARCHAR(45) NULL,
-  `carrierFrequency` VARCHAR(45) NULL,
-  `pressureSensorType` VARCHAR(45) NULL,
-  `temperatureSensorType` VARCHAR(45) NULL,
-  `humiditySensorType` VARCHAR(45) NULL,
-  `theConfigurationOfTheRadiosonde` VARCHAR(45) NULL,
-  `configurationOfRadiosondeSuspension` VARCHAR(45) NULL,
-  `theManufacturerOfTheShell` VARCHAR(45) NULL,
-  `typeShell` VARCHAR(45) NULL,
-  `theWeightOfTheShell` VARCHAR(45) NULL,
-  `gasForFillingTheShell` VARCHAR(45) NULL,
-  `counGas` VARCHAR(45) NULL,
-  `longSuspension` VARCHAR(45) NULL,
-  `reasonForDiscontinuation` VARCHAR(45) NULL,
+  `oborudovanie_zond` VARCHAR(45) NULL,
+  `height` INT NULL,
+  `number_look` INT NULL,
+  `lengthOfTheSuspension` INT NULL,
+  `amountOfGas` INT NULL,
+  `gasForFillingTheShell` INT NULL,
+  `filling` INT NULL,
+  `weightOfTheShell` INT NULL,
+  `typeShell` INT NULL,
+  `radiosondeShellManufacturer` INT NULL,
+  `configurationOfRadiosondeSuspension` INT NULL,
+  `configurationOfTheRadiosonde` INT NULL,
+  `typeOfHumiditySensor` INT NULL,
+  `temperatureSensorType` INT NULL,
+  `pressureSensorType` INT NULL,
+  `carrierFrequency` INT NULL,
+  `text_info` VARCHAR(45) NULL,
+  `s_n_zonda` VARCHAR(45) NULL,
+  `PO_versia` VARCHAR(45) NULL,
+  `MethodGeopotentialHeight` INT NULL,
+  `ugol` INT NULL,
+  `azimut` INT NULL,
+  `h_opor` INT NULL,
+  `groundBasedRradiosondeSignalReceptionSystem` INT NULL,
+  `identificator` VARCHAR(45) NULL,
+  `sensingNnumber` INT NULL,
   PRIMARY KEY (`idRelease`),
   INDEX `fk_releaseZonde_Stations1_idx` (`Stations_numberStation` ASC),
   CONSTRAINT `fk_releaseZonde_Stations1`
@@ -91,8 +88,9 @@ CREATE TABLE IF NOT EXISTS `tsao`.`releaseZonde` (
 ENGINE = InnoDB;
 
 
+
 -- -----------------------------------------------------
--- Table `tsao`.`table1`
+-- Table `tsao`.`content_telegram`
 -- -----------------------------------------------------
 CREATE TABLE IF NOT EXISTS `tsao`.`content_telegram` (
   `id` INT NOT NULL auto_increment,
