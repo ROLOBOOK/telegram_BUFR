@@ -1,20 +1,53 @@
+# !/usr/bin/env python3
 # отчет_по_радиозондам_за_месяц.txt
     
 # ПОЛУЧАЕМ ДАННЫЕ ИЗ БАЗЫ
 import MySQLdb
 
+def input_date_from_user():
+    for _ in range(2):
+        try:
+            data_from_user = input('Введите год и месяц через пробел в формате ХХХХХ MМ или exit для выхода:')
+            if data_from_user == 'exit':
+                print(data_from_user)
+                return 'exit'
+            year,month = list(map(int, data_from_user.split()))
+            if 2018 > year:
+                print("Введите год больше 2018")
+            else:
+                if 0 < month < 13:
+                    return year,month
+                else:
+                    print('не правильно указан МЕСЯЦ, попробуйте еще раз')
+        except:
+            print(" не корректная дата, введите еще раз")
+    print('Не умеет вводить дату... перезапустите программу')
+
 try:
     conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'tsao', charset="utf8")
     cursor = conn.cursor()
 # # Получаем данные.
+    while 1:
+        year_month = input_date_from_user()
+        if year_month == 'exit':
+            
+            exit()
 
-# releaseZonde ИНФА ПО ЗОНДАМ ЗА МЕСЯЦ ('Северное', 20046, '90 10310', 1, 0),
-    cursor.execute('''SELECT u.Ugms, r.Stations_numberStation, r.oborudovanie_zond, day(r.date), hour(r.date)
-    FROM tsao.releaseZonde as r left join tsao.Stations as s on r.Stations_numberStation = s.numberStation
-    left join tsao.UGMS as u on u.idUGMS = s.UGMS_idUGMS
-    order by Stations_numberStation, date;''')
-    data_month = cursor.fetchall()
-    
+    # releaseZonde ИНФА ПО ЗОНДАМ ЗА МЕСЯЦ ('Северное', 20046, '90 10310', 1, 0),
+        cursor.execute(f'''SELECT u.Ugms, r.Stations_numberStation, r.oborudovanie_zond, day(r.date), hour(r.date)
+            FROM tsao.releaseZonde as r left join tsao.Stations as s on r.Stations_numberStation = s.numberStation
+            left join tsao.UGMS as u on u.idUGMS = s.UGMS_idUGMS
+            where year(r.date) = {year_month[0]} and month(r.date) = {year_month[1]}
+            order by Stations_numberStation, date;''')
+        data_month = cursor.fetchall()
+        
+        if len(data_month) == 0:
+            print(f"Нет данных за этот период, попробуйте еще раз")
+        else:
+            break
+ 
+
+        
 # СПИСОК УГМС   'Сев.-Кавказское',), 
     cursor.execute('''SELECT UGMS FROM tsao.UGMS''')
     data_UGMS = cursor.fetchall()
@@ -114,3 +147,4 @@ with open('отчет_по_радиозондам_за_месяц.txt', 'a') as 
             s += f'{z} = {i[-1]}; '
         f.write(f'По УГМС {ugms_stantion} всего: {s[:-2]}\n\n')
         
+print("отчет создан")
