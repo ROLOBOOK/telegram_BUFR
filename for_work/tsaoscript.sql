@@ -119,3 +119,11 @@ ENGINE = InnoDB;
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+-- -----------------------------------------------------
+-- create user 'fol` for work to base
+-- -----------------------------------------------------
+
+create user 'fol'@'%' identified by 'Qq123456';
+grant all privileges on *.* to 'fol'@'%';
+flush privileges;

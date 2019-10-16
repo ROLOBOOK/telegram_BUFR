@@ -1,5 +1,6 @@
 #!/usr/bin/bash
 
+sudo apt-get install mysql-server
 sudo apt-get install python3-pip
 sudo apt-get install python-dev default-libmysqlclient-dev #for mysqlclient
 pip3 install pybufrkit
