@@ -3,7 +3,7 @@
 import os, MySQLdb
 try:
     
-    with open('telegram_BUFR/for_work/индексы.txt', 'r') as f:
+    with open('for_work/index_Station_UGMS.txt', 'r') as f:
                     indexs = {line.split()[0]: line.split()[-1].split('|') for line in f}
 except:
     print('ошибка, данные из файла индексы.txt не получены')
@@ -21,6 +21,7 @@ try:
     conn.commit()
 
     cursor.execute("SELECT * FROM tsao.UGMS")
+    ugms = {i[1]:i[0] for i in cursor.fetchall()}
 
 except Exception as ex:
     print(f'ошибка при заполнении таблицы UGMS: {ex}')
