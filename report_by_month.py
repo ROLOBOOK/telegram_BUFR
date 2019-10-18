@@ -115,7 +115,7 @@ string = '{:>16}|'.format('срок')
 for i in range(1,32):
     string += '{:^9}|'.format(i)
 
-with open('отчет_по_радиозондам_за_месяц.txt', 'a') as f:
+with open(f'отчет_по_радиозондам_за_{year_month}.txt', 'a') as f:
     
     for ugms_stantion in ugms:
         
@@ -147,4 +147,4 @@ with open('отчет_по_радиозондам_за_месяц.txt', 'a') as 
             s += f'{z} = {i[-1]}; '
         f.write(f'По УГМС {ugms_stantion} всего: {s[:-2]}\n\n')
         
-print("отчет создан")
+print(f"создан отчет_по_радиозондам_за_{year_month}")
