@@ -14,7 +14,7 @@ pip3 install mysqlclient
 mysql < tsaoscript.sql
 
 # записываем в базу информацию о станциях и УГМС
-cd /home/$USER/telegram_BUFR-with_MYSQL 
+ 
 python3 in_table_MYSQL_UGMS_and_Stations.py
 
 # делаем папку folder_with_telegram сетевой, даем на нее права
