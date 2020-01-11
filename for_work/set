@@ -3,7 +3,7 @@
 # устанавливаем mysql сервер 5, pip3 для питона 7, ssh  для доступа с коносли 11, samba сделать сетевую папку 9,
 # ставим библиотеки для обработки BUFR 14 и библиотеку для работы с базой mysql 20  
 
-apt-get install -y mysql-server, python3-pip, samba, ssh, python-dev default-libmysqlclient-dev, build-essential libssl-dev libffi-dev python-dev
+apt-get install -y mysql-server python3-pip samba ssh python-dev default-libmysqlclient-dev build-essential libssl-dev libffi-dev python-dev
 
 pip3 install pybufrkit
 
@@ -14,11 +14,11 @@ pip3 install mysqlclient
 mysql < tsaoscript.sql
 
 # записываем в базу информацию о станциях и УГМС
- 
-python3 ../in_table_MYSQL_UGMS_and_Stations.py
+cd .. 
+python3 ./in_table_MYSQL_UGMS_and_Stations.py
 
 # делаем папку folder_with_telegram сетевой, даем на нее права
-cd ../folder_with_telegram
+cd ./folder_with_telegram
 pwd=$(pwd)
 sudo chmod -R 7777 $pwd
 sudo chown -R nobody:nogroup $pwd
