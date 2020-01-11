@@ -3,37 +3,28 @@
 # устанавливаем mysql сервер 5, pip3 для питона 7, ssh  для доступа с коносли 11, samba сделать сетевую папку 9,
 # ставим библиотеки для обработки BUFR 14 и библиотеку для работы с базой mysql 20  
 
-sudo apt-get install -y mysql-server
-
-sudo apt-get install -y python3-pip
-
-sudo apt install -y samba
-
-sudo apt install -y ssh
+apt-get install -y mysql-server, python3-pip, samba, ssh, python-dev default-libmysqlclient-dev, build-essential libssl-dev libffi-dev python-dev
 
 pip3 install pybufrkit
-
-sudo apt-get install -y python-dev default-libmysqlclient-dev
-
-sudo apt-get install -y build-essential libssl-dev libffi-dev python-dev
 
 pip3 install mysqlclient
 
 #  запускаем скрипт создания баз для хранения расшифрованых телеграмм
 
-sudo mysql < /home/$USER/telegram_BUFR-with_MYSQL/for_work/tsaoscript.sql
+mysql < tsaoscript.sql
 
 # записываем в базу информацию о станциях и УГМС
-
-python3 /home/$USER/telegram_BUFR-with_MYSQL/in_table_MYSQL_UGMS_and_Stations.py
+cd /home/$USER/telegram_BUFR-with_MYSQL 
+python3 in_table_MYSQL_UGMS_and_Stations.py
 
 # делаем папку folder_with_telegram сетевой, даем на нее права
-
-sudo chmod -R 7777 /home/$USER/telegram_BUFR-with_MYSQL/folder_with_telegram
-sudo chown -R nobody:nogroup /home/fol/telegram_BUFR-with_MYSQL/folder_with_telegram
+cd ../folder_with_telegram
+pwd=$(pwd)
+sudo chmod -R 7777 $pwd
+sudo chown -R nobody:nogroup $pwd
 
 echo "[folder_with_telegram]
-path = /home/$USER/telegram_BUFR-with_MYSQL/folder_with_telegram
+path = $pwd
 browsable = yes
 writable = yes
 qest ok = yes
