@@ -21,7 +21,7 @@ pip3 install mysqlclient
 
 #  запускаем скрипт создания баз для хранения расшифрованых телеграмм
 
-sudo mysql < tsaoscript.sql
+sudo mysql < /home/$USER/telegram_BUFR-with_MYSQL/for_work/tsaoscript.sql
 
 # записываем в базу информацию о станциях и УГМС
 cd ..
