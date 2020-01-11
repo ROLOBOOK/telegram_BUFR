@@ -149,7 +149,7 @@ try:
     for file_name in files:
         try:
             decoder = Decoder()
-            with open(f'./{file_name}', 'rb') as ins: #
+            with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
                 bufr_message = decoder.process(ins.read())
             json_data = FlatJsonRenderer().render(bufr_message)
         except:
@@ -179,7 +179,7 @@ try:
             conn.commit()
 
         #     перемещаем проверенный фаыл в папку check_telegramm
-        os.rename(file_name, f'./check_telegram/{file_name}')
+        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
 
             
 
