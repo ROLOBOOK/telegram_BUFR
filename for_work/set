@@ -33,7 +33,7 @@ python3 ./in_table_MYSQL_UGMS_and_Stations.py
 sudo chmod -R 7777 /home/$USER/telegram_BUFR-with_MYSQL/folder_with_telegram
 sudo chown -R nobody:nogroup /home/fol/telegram_BUFR-with_MYSQL/folder_with_telegram
 
-echo "[folder_with_telegram]
+sudo echo "[folder_with_telegram]
 path = /home/$USER/telegram_BUFR-with_MYSQL/folder_with_telegram
 browsable = yes
 writable = yes
@@ -41,4 +41,4 @@ qest ok = yes
 public = yes
 read only = no" >> /etc/samba/smb.conf
 
-echo software installed and tested congratulations
+echo FINISH
