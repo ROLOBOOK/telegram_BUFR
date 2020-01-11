@@ -15,7 +15,7 @@ mysql < tsaoscript.sql
 
 # записываем в базу информацию о станциях и УГМС
  
-python3 in_table_MYSQL_UGMS_and_Stations.py
+python3 ../in_table_MYSQL_UGMS_and_Stations.py
 
 # делаем папку folder_with_telegram сетевой, даем на нее права
 cd ../folder_with_telegram
