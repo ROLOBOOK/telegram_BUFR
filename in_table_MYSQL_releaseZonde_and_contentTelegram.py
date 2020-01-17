@@ -3,8 +3,10 @@
 # заполняем таблицу tsao.content_telegram и releaseZonde с данными наблюдений:
 
 
-import os, MySQLdb
+import os, MySQLdb, time
 
+
+begintime = time.time()
 
 try:
     from pybufrkit.renderer import FlatJsonRenderer
@@ -103,7 +105,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         sensingNnumber = data[2] # # Номер зондирования(001083):1
     except Exception as ex:
         print(f'ошибка при получении данны для таблицы releaseZonde \n{ex}')
-        
+        return 0
     return (index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
@@ -163,7 +165,9 @@ try:
         for data in json_data[3][2]:
 
             data_in_releaseZonde = get_data_for_table_releaseZonde(data, date)
-            
+            if data_in_releaseZonde == 0:
+                print(f'mistake in file {file_name}')
+                continue
             cursor.execute('''INSERT INTO tsao.releaseZonde
             (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
@@ -179,8 +183,10 @@ try:
             conn.commit()
 
         #     перемещаем проверенный фаыл в папку check_telegramm
-        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
-
+            os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
+            if  time.time() - begintime > 180:
+                t = time.time() - begintime
+                print('Сначала проверки прошло {}:{:02}:{:02}'.format(t//3600%24,t//60%60,t%60))
             
 
 except Exception as ex:
@@ -189,3 +195,5 @@ except Exception as ex:
 # Разрываем подключение.
 finally:
     conn.close()
+t = time.time() - begintime
+print('Проверка закончена за {}:{:02}:{:02}'.format(t//3600%24,t//60%60,t%60))
