@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS `tsao`.`releaseZonde` (
   `groundBasedRradiosondeSignalReceptionSystem` INT NULL,
   `identificator` VARCHAR(45) NULL,
   `sensingNnumber` INT NULL,
+  `date_start` DATETIME NULL,
   PRIMARY KEY (`idRelease`),
   INDEX `fk_releaseZonde_Stations1_idx` (`Stations_numberStation` ASC),
   CONSTRAINT `fk_releaseZonde_Stations1`

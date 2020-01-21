@@ -1,0 +1,1 @@
+alter table tsao.releaseZonde add column date_start DATETIME NULL;

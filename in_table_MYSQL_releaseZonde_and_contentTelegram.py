@@ -103,6 +103,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         groundBasedRradiosondeSignalReceptionSystem = data[7] # # Наземная система приема сигналов радиозондов(002066):6
         identificator = data[3].decode('utf-8').replace(' ', '') if type(data[3]) == bytes else None # # Идентификация наблюдателей(001095):IGP 
         sensingNnumber = data[2] # # Номер зондирования(001083):1
+        date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
         print(f'ошибка при получении данны для таблицы releaseZonde \n{ex}')
         return 0
@@ -110,7 +111,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
            pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
-           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber)
+           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start)
 
 # номерстанции дата время P T Td H D V dLat dLon Flags
 # Stations_numberStation date time  P T Td H D V dLat dLon Flags
@@ -173,8 +174,8 @@ try:
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
            pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
-           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
+           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
             conn.commit()
             data_in_content_telegram = get_data_from_BUFR(data, date)
 
