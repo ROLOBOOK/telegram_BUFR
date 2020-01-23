@@ -192,7 +192,7 @@ try:
 
 except Exception as ex:
     print(ex)
-
+    print(f'\nmistake in file: {file_name}')
 # Разрываем подключение.
 finally:
     conn.close()
