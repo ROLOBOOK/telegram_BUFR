@@ -14,6 +14,11 @@ try:
 except Exception as ex:
 
     print(ex)
-result = ''.join([f'{i[0]} {i[1]} {i[2]} {i[3]}\n' for i in data_month])
-with open(f'{year}-{month}-{day} {hour}:00:00', 'a') as f:
-    f.write(result)
+
+if data_month:
+    result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]}\n' for i in data_month])
+    with open(f'{year}-{month}-{day} {hour}:00', 'a') as f:
+        f.write(result)
+    print(f'report file  {year}-{month}-{day} {hour}:00')
+else:
+    print('base do not have data')
