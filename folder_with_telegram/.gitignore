@@ -1,5 +1,0 @@
-*.zip
-*.bin
-cheking_telegram/*.bin
-file_with_mistakes/*.bin
-!.gitignore
