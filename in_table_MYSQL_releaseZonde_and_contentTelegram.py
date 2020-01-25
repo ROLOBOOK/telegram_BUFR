@@ -1,13 +1,13 @@
 # !/usr/bin/env python3
 
-# заполняем таблицу tsao.content_telegram и releaseZonde с данными наблюдений:
+# заполняем таблицу cao.content_telegram и releaseZonde с данными наблюдений:
 
 
 import os, MySQLdb, time
 
 
 begintime = time.time()
-
+minut = 180
 try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
@@ -15,9 +15,14 @@ except:
     print("установите библиотеки install_pip3_and_pybufrkit.sh из папки for_work и перезапустите скрипт")
     exit()
     
+def log_mistake(file_name, ex):
+    with open('log_mistake.txt', 'a') as mistake:
+        mistake.write(f'{file_name} - {ex}\n')
+
+
 def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
     
-    '''получаем данные для таблицы tsao.content_telegram с данными наблюдений'''
+    '''получаем данные для таблицы cao.content_telegram с данными наблюдений'''
     try:
         index_station = '{}{:03d}'.format(data[27],data[28])
 
@@ -62,7 +67,7 @@ def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
 
     #     t = 0  flag = 1    P = 2    H = 3    dflat = 4    dlon = 5    T = 6    Td = 7    V = 9    D = 8
     except Exception as ex:
-        print(f'ошибка при получении данных для таблицы tsao.content_telegram с данными наблюдений \n{ex}')
+        print(f'ошибка при получении данных для таблицы cao.content_telegram с данными наблюдений \n{ex}')
         
     return  data_in_table
  
@@ -105,8 +110,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         sensingNnumber = data[2] # # Номер зондирования(001083):1
         date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
-        print(f'ошибка при получении данны для таблицы releaseZonde \n{ex}')
-        return 0
+        return ex
     return (index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
@@ -119,9 +123,9 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
 
 # получаем индексы станций из базы
 try:
-    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'tsao', charset="utf8")
+    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
     cursor = conn.cursor()
-    cursor.execute("SELECT numberStation FROM tsao.Stations")
+    cursor.execute("SELECT numberStation FROM cao.Stations")
 
 # # Получаем данные.
     indexs_stations = [i[0] for i in cursor.fetchall()]
@@ -145,7 +149,7 @@ except Exception as ex:
     
 # подключаемся к базе для записи в таблицу  table1 с данными наблюдений
 try:
-    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'tsao', charset="utf8")
+    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
     cursor = conn.cursor()
 
 # декодируем burf в юникод
@@ -162,14 +166,17 @@ try:
         d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
         t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
         date = f'{d} {t}' # дата и срок выпуска
-        
-        for data in json_data[3][2]:
+        flag = True #перемещать файл или нет
 
+        for data in json_data[3][2]:  #  если несколько телеграмм в одном файле все обработаем
+            # получаем данные для таблицы cao.releaseZonde, заносим их в базу
             data_in_releaseZonde = get_data_for_table_releaseZonde(data, date)
-            if data_in_releaseZonde == 0:
-                print(f'mistake in file {file_name}')
+            if type(data_in_releaseZonde) != type((1,)):
+                log_mistake(file_name, data_in_releaseZonde)
+                os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
+                flag = False
                 continue
-            cursor.execute('''INSERT INTO tsao.releaseZonde
+            cursor.execute('''INSERT INTO cao.releaseZonde
             (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
@@ -179,22 +186,30 @@ try:
             conn.commit()
             data_in_content_telegram = get_data_from_BUFR(data, date)
 
-            #             заносим данные в таблицу tsao.content_telegram
-            cursor.executemany('''INSERT INTO tsao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
+            #             заносим данные в таблицу cao.content_telegram
+            cursor.executemany('''INSERT INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
 
         #     перемещаем проверенный фаыл в папку check_telegramm
+        if flag:
             os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
-            if  time.time() - begintime > 180:
-                t = time.time() - begintime
-                print('Сначала проверки прошло {}:{:02}:{:02}'.format(t//3600%24,t//60%60,t%60))
+        if  time.time() - begintime > minut:
+            minut+=180
+            t = time.time() - begintime
+            print('Сначала проверки прошло {}:{}:{}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
             
 
 except Exception as ex:
-    print(ex)
-    print(f'\nmistake in file: {file_name}')
+    os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
+    log_mistake(file_name, ex)
 # Разрываем подключение.
 finally:
     conn.close()
 t = time.time() - begintime
-print('Проверка закончена за {}:{:02}:{:02}'.format(t//3600%24,t//60%60,t%60))
+print('Проверка закончена за {}:{}:{}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+
+try:
+    with open('log_mistake.txt', 'r') as f:
+        print('проверьте файл с ошибками log_mistake.txt')
+except:
+    print('ошибок нет')

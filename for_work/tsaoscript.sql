@@ -8,19 +8,19 @@ SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='TRADITIONAL,ALLOW_INVALID_DATES';
 
 -- -----------------------------------------------------
--- Schema tsao
+-- Schema cao
 -- -----------------------------------------------------
 
 -- -----------------------------------------------------
--- Schema tsao
+-- Schema cao
 -- -----------------------------------------------------
-CREATE SCHEMA IF NOT EXISTS `tsao` DEFAULT CHARACTER SET utf8 ;
-USE `tsao` ;
+CREATE SCHEMA IF NOT EXISTS `cao` DEFAULT CHARACTER SET utf8 ;
+USE `cao` ;
 
 -- -----------------------------------------------------
--- Table `tsao`.`UGMS`
+-- Table `cao`.`UGMS`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsao`.`UGMS` (
+CREATE TABLE IF NOT EXISTS `cao`.`UGMS` (
   `idUGMS` INT NOT NULL AUTO_INCREMENT,
   `UGMS` VARCHAR(45) NULL,
   PRIMARY KEY (`idUGMS`))
@@ -28,9 +28,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `tsao`.`Stations`
+-- Table `cao`.`Stations`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsao`.`Stations` (
+CREATE TABLE IF NOT EXISTS `cao`.`Stations` (
   `numberStation` INT NOT NULL,
   `name_stations` VARCHAR(45) NULL,
   `UGMS_idUGMS` INT NOT NULL,
@@ -38,16 +38,16 @@ CREATE TABLE IF NOT EXISTS `tsao`.`Stations` (
   INDEX `fk_Stations_UGMS_idx` (`UGMS_idUGMS` ASC),
   CONSTRAINT `fk_Stations_UGMS`
     FOREIGN KEY (`UGMS_idUGMS`)
-    REFERENCES `tsao`.`UGMS` (`idUGMS`)
+    REFERENCES `cao`.`UGMS` (`idUGMS`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `tsao`.`releaseZonde`
+-- Table `cao`.`releaseZonde`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsao`.`releaseZonde` (
+CREATE TABLE IF NOT EXISTS `cao`.`releaseZonde` (
   `idRelease` INT NOT NULL auto_increment,
   `Stations_numberStation` INT NOT NULL,
   `date` DATETIME NULL,
@@ -83,7 +83,7 @@ CREATE TABLE IF NOT EXISTS `tsao`.`releaseZonde` (
   INDEX `fk_releaseZonde_Stations1_idx` (`Stations_numberStation` ASC),
   CONSTRAINT `fk_releaseZonde_Stations1`
     FOREIGN KEY (`Stations_numberStation`)
-    REFERENCES `tsao`.`Stations` (`numberStation`)
+    REFERENCES `cao`.`Stations` (`numberStation`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -91,9 +91,9 @@ ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `tsao`.`content_telegram`
+-- Table `cao`.`content_telegram`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `tsao`.`content_telegram` (
+CREATE TABLE IF NOT EXISTS `cao`.`content_telegram` (
   `id` INT NOT NULL auto_increment,
   `Stations_numberStation` INT NOT NULL,
   `date` DATETIME NULL,
@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS `tsao`.`content_telegram` (
   INDEX `fk_table1_Stations1_idx` (`Stations_numberStation` ASC),
   CONSTRAINT `fk_table1_Stations1`
     FOREIGN KEY (`Stations_numberStation`)
-    REFERENCES `tsao`.`Stations` (`numberStation`)
+    REFERENCES `cao`.`Stations` (`numberStation`)
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;

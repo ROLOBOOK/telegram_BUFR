@@ -3,10 +3,10 @@ name = input('year month day hour: ')
 year, month, day,hour = name.split()
 try:
 
-    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'tsao', charset="utf8")
+    conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
 
     cursor = conn.cursor()
-    cursor.execute(f''' select Stations_numberStation, date_start, oborudovanie_zond, text_info from tsao.releaseZonde
+    cursor.execute(f''' select Stations_numberStation, date_start, oborudovanie_zond, text_info from cao.releaseZonde
     where year(date) = {year} and month(date) = {month} and day(date) = {day} and hour(date) = {hour}
     order by Stations_numberStation;''')
 
