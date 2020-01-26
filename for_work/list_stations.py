@@ -21,9 +21,11 @@ indexs_stations = [i[0] for i in get_from_table('numberStation', 'cao.Stations')
 #получаем список УГМС  из базы
 list_ugms = [i[0] for i in get_from_table('UGMS','cao.UGMS')]
 
-if indexs_stations:
-    print(*indexs_stations, sep='     ')
-    print()
-    print(*list_ugms, sep='     ')
-else: 
-    print('empty')
+if __name__ == '__main__':
+
+    if indexs_stations:
+        print(*indexs_stations, sep='     ')
+        print()
+        print(*list_ugms, sep='     ')
+    else: 
+        print('empty')
