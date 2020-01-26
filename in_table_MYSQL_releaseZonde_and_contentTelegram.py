@@ -79,9 +79,9 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
     try:
         index_station = '{}{:03d}'.format(data[27],data[28]) # индекс станции
         coordinateStation = ' '.join(map(str, data[41:46])) # координаты станции
-        oborudovanie = data[30]
-        zond = data[-1].decode('utf-8').split()[-1] if type(data[-1]) == bytes else None
-        oborudovanie_zond = f'{oborudovanie} {zond}' #  оборудование + текстовая информация
+       # oborudovanie = data[30]
+        #zond = data[-1].decode('utf-8').split()[-1] if type(data[-1]) == bytes else None
+        oborudovanie_zond = '{:03d} {:02d} {:03d} {:02d}'.format(data[30], data[31], data[32], data[33]) #  оборудование + 
         device = ' '.join(map(str, data[30:34])) # оборудование вся строка
         height = data[23] # высота станици 
         number_look = data[1] # # Номер наблюдения(001082):421
@@ -194,9 +194,9 @@ try:
         if flag:
             os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
         if  time.time() - begintime > minut:
-            minut+=180
+            minut+=(time.time()-begintime)
             t = time.time() - begintime
-            print('Сначала проверки прошло {}:{}:{}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
             
 
 except Exception as ex:
@@ -206,7 +206,7 @@ except Exception as ex:
 finally:
     conn.close()
 t = time.time() - begintime
-print('Проверка закончена за {}:{}:{}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
 
 try:
     with open('log_mistake.txt', 'r') as f:
