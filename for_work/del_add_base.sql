@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS `cao`.`Stations` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+
 -- -----------------------------------------------------
 -- Table `cao`.`releaseZonde`
 -- -----------------------------------------------------
@@ -89,6 +90,14 @@ CREATE TABLE IF NOT EXISTS `cao`.`releaseZonde` (
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+ALTER TABLE `cao`.`releaseZonde`
+ADD UNIQUE INDEX `Stations_numberStation_UNIQUE` (`Stations_numberStation` ASC),
+ADD UNIQUE INDEX `date_start_UNIQUE` (`date_start` ASC);
+
+
+
+
+
 -- -----------------------------------------------------
 -- Table `cao`.`content_telegram`
 -- -----------------------------------------------------
@@ -114,7 +123,6 @@ CREATE TABLE IF NOT EXISTS `cao`.`content_telegram` (
     ON DELETE NO ACTION
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
-
 
 SET SQL_MODE=@OLD_SQL_MODE;
 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
