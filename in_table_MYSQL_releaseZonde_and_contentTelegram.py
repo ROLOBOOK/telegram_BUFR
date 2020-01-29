@@ -176,7 +176,7 @@ try:
                 os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
                 flag = False
                 continue
-            cursor.execute('''INSERT INTO cao.releaseZonde
+            cursor.execute('''INSERT IGNORE INTO cao.releaseZonde
             (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
@@ -187,7 +187,7 @@ try:
             data_in_content_telegram = get_data_from_BUFR(data, date)
 
             #             заносим данные в таблицу cao.content_telegram
-            cursor.executemany('''INSERT INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
+            cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
 
         #     перемещаем проверенный фаыл в папку check_telegramm
