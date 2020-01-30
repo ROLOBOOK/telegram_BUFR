@@ -3,11 +3,14 @@
 # заполняем таблицу cao.content_telegram и releaseZonde с данными наблюдений:
 
 
-import os, MySQLdb, time
+import os, MySQLdb, time, random, datetime
 
-
+today = datetime.datetime.now()
 begintime = time.time()
-minut = 180
+minut = random.uniform(50,130)
+
+print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}')
+
 try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
@@ -16,8 +19,12 @@ except:
     exit()
     
 def log_mistake(file_name, ex):
-    with open('log_mistake.txt', 'a') as mistake:
+    with open(f'{today.strftime("%Y-%m-%d %H:%M")} log_mistake.txt', 'a') as mistake:
         mistake.write(f'{file_name} - {ex}\n')
+
+def decod_b(data):
+    data = [chr(i) for i in data]
+    return ''.join(data)
 
 
 def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
@@ -67,7 +74,7 @@ def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
 
     #     t = 0  flag = 1    P = 2    H = 3    dflat = 4    dlon = 5    T = 6    Td = 7    V = 9    D = 8
     except Exception as ex:
-        print(f'ошибка при получении данных для таблицы cao.content_telegram с данными наблюдений \n{ex}')
+        return  f'ошибка в get_data_from_BUFR - {ex}\n'
         
     return  data_in_table
  
@@ -110,7 +117,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         sensingNnumber = data[2] # # Номер зондирования(001083):1
         date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
-        return ex
+        return f'get_data_for_table_releaseZonde -{ex}'
     return (index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
@@ -131,7 +138,7 @@ try:
     indexs_stations = [i[0] for i in cursor.fetchall()]
     
 except Exception as ex:
-    print(ex)
+    log_mistake('индексы станций не получены', ex)
 
 # Разрываем подключение.
 finally:
@@ -144,7 +151,7 @@ finally:
 try:
     files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and int(file[:5]) in indexs_stations]
 except Exception as ex:
-    print(f"ошибка получения списка телеграм для расшифровки \n{ex}")
+    log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
 
     
 # подключаемся к базе для записи в таблицу  table1 с данными наблюдений
@@ -159,8 +166,8 @@ try:
             with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
                 bufr_message = decoder.process(ins.read())
             json_data = FlatJsonRenderer().render(bufr_message)
-        except:
-            print('не декодирован')
+        except Exception as ex:
+            log_mistake(file_name, f'не декодирован, {ex}\n')
             
 # тут обрабатываем json_data     
         d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
@@ -172,7 +179,7 @@ try:
             # получаем данные для таблицы cao.releaseZonde, заносим их в базу
             data_in_releaseZonde = get_data_for_table_releaseZonde(data, date)
             if type(data_in_releaseZonde) != type((1,)):
-                log_mistake(file_name, data_in_releaseZonde)
+                log_mistake(file_name, f' ошибка в data_in_releaseZonde {data_in_releaseZonde}')
                 os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
                 flag = False
                 continue
@@ -185,7 +192,8 @@ try:
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
             conn.commit()
             data_in_content_telegram = get_data_from_BUFR(data, date)
-
+            if type(data_in_content_telegram) != type([]):
+                log_mistake(file_name, f'ошибка в data_in_content_telegram {data_in_content_telegram}')
             #             заносим данные в таблицу cao.content_telegram
             cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
@@ -194,7 +202,7 @@ try:
         if flag:
             os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
         if  time.time() - begintime > minut:
-            minut+=(time.time()-begintime)
+            minut+=random.uniform(50,130)
             t = time.time() - begintime
             print('Сначала проверки прошло {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
             
