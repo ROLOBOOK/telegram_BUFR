@@ -91,11 +91,7 @@ CREATE TABLE IF NOT EXISTS `cao`.`releaseZonde` (
 ENGINE = InnoDB;
 
 ALTER TABLE `cao`.`releaseZonde`
-ADD UNIQUE INDEX `Stations_numberStation_UNIQUE` (`Stations_numberStation` ASC),
-ADD UNIQUE INDEX `date_start_UNIQUE` (`date_start` ASC);
-
-
-
+ADD CONSTRAINT `12` UNIQUE KEY(`Stations_numberStation`, `date_start`);
 
 
 -- -----------------------------------------------------
