@@ -1,0 +1,15 @@
+#!/usr/bin/bash
+
+# устанавливаем mysql сервер 5, pip3 для питона 7, ssh  для доступа с коносли 11$
+# ставим библиотеки для обработки BUFR 14 и библиотеку для работы с базой mysql $
+
+apt-get install -y mysql-server python3-pip  ssh python-dev default-libmysqlclient-dev build-essential libssl-dev libffi-dev python-dev > log.txt
+
+pip3 install pybufrkit >>log.txt
+
+pip3 install mysqlclient >>log.txt
+
+alias go='python3 for_work/processing_telegram.py'
+
+sudo mysql < cao_base.sql
+
