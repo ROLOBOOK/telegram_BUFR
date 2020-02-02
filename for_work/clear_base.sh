@@ -1,4 +1,4 @@
-sudo mysql < drop_base.sql
+sudo mysql < for_work/drop_base.sql
 if [[ $? = 0 ]]
 then
 echo 'create new base CAO2'

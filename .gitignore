@@ -1,2 +1,5 @@
+*.bin
 *.txt
 /folder_with_telegram/*
+/__pycache__/
+/for_work/__pycache__/

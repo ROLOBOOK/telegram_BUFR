@@ -11,7 +11,7 @@ today = datetime.datetime.now()
 begintime = time.time()
 minut = random.uniform(50,130)
 
-print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}')
+print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")},', end=' ')
 
 def log_mistake(file_name, ex):
     ''' записывает в лог две переданые строки'''
@@ -28,7 +28,7 @@ def decod_b(data):
     return ''.join(data).replace(' ', '')
 
 def get_data_for_info_pusk(bufr_message, kye=0):
-    index_station = '{:03d}{:03d}'.fomrat(get_values_from_bufr("001001",kye),get_values_from_bufr("001002",kye))
+    index_station = '{:03d}{:03d}'.format(get_values_from_bufr("001001",kye),get_values_from_bufr("001002",kye))
     time_pusk = f'{get_values_from_bufr("004001",kye)}-{get_values_from_bufr("004002",kye)}-{get_values_from_bufr("004003",kye)} {get_values_from_bufr("004004",kye)}:{get_values_from_bufr("004005",kye)}:00'
     koordinat = f'{get_values_from_bufr("005001",kye)} {get_values_from_bufr("006001",kye)} {get_values_from_bufr("007030",kye)} {get_values_from_bufr("007031",kye)} {get_values_from_bufr("007007",kye)}'
     oborudovanie = f'{get_values_from_bufr("002011",kye)} {get_values_from_bufr("002013",kye)} {get_values_from_bufr("002014",kye)} {get_values_from_bufr("002003",kye)}'
@@ -76,7 +76,7 @@ except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для: ", f'{ex}\n')
     print('Критическая ошибка, проверьте логи.')
     exit()
-
+print(f'для проверки загруженно {len(files)} телеграмм.')
 if not files:
     print('Не получены файлы для проверки')
     exit()
@@ -100,12 +100,11 @@ for file_name in files:
     for kye in range(len(json_data[3][2])):
         try:
             data_in_cao_info_pusk = get_data_for_info_pusk(bufr_message,kye)
-            text_info = json_data[3][2][kye][-1].decode('utf-8') if type(json_data[3][2][kye][-1]) == bytes else None
+            text_info = decod_b(json_data[3][2][kye][-1]) if type(json_data[3][2][kye][-1]) == bytes else None
             data_in_cao_info_pusk.append(time_srok)
             data_in_cao_info_pusk.append(text_info)
         except Exception as ex:
             log_mistake(file_name, ex)
-            print(file_name, ex)
         if not data_in_cao_info_pusk:
             print(file_name, 'problems')
         try:
