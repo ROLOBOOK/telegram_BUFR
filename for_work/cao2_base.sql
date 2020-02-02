@@ -70,6 +70,6 @@ ADD CONSTRAINT `12` UNIQUE KEY(`index_station`, `time_pusk`);
 -- -----------------------------------------------------
 
 create user 'archi'@'%' identified by 'Qq123456';
-grant all privileges on *.* to 'fol'@'%';
+grant all privileges on *.* to 'archi'@'%';
 flush privileges;
 

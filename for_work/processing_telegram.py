@@ -138,12 +138,9 @@ for file_name in files:
     except Exception as ex:
         log_mistake(file_name, ex)
 
-
-
 t = time.time() - begintime
 print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-try:
-    with open(f'{today.strftime("%Y-%m-%d)} log_mistake.txt', 'a') as mistake:
-        print('проверьте файл с ошибками log_mistake.txt')
-except:
+if os.path.exists(f'{today.strftime("%Y-%m-%d")} log_mistake.txt'):
+    print(f'проверьте файл с ошибками {today.strftime("%Y-%m-%d")} log_mistake.txt')
+else:
     print('ошибок нет')
