@@ -15,7 +15,7 @@ print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}')
 
 def log_mistake(file_name, ex):
     ''' записывает в лог две переданые строки'''
-    with open(f'{today.strftime("%Y-%m-%d %H:%M")} log_mistake.txt', 'a') as mistake:
+    with open(f'{today.strftime("%Y-%m-%d")} log_mistake.txt', 'a') as mistake:
         mistake.write(f'{file_name} - {ex}\n')
 
 def get_values_from_bufr(descriptor, key=0):
@@ -28,7 +28,7 @@ def decod_b(data):
     return ''.join(data).replace(' ', '')
 
 def get_data_for_info_pusk(bufr_message, kye=0):
-    index_station = f'{get_values_from_bufr("001001",kye)}{get_values_from_bufr("001002",kye)}'
+    index_station = '{:03d}{:03d}'.fomrat(get_values_from_bufr("001001",kye),get_values_from_bufr("001002",kye))
     time_pusk = f'{get_values_from_bufr("004001",kye)}-{get_values_from_bufr("004002",kye)}-{get_values_from_bufr("004003",kye)} {get_values_from_bufr("004004",kye)}:{get_values_from_bufr("004005",kye)}:00'
     koordinat = f'{get_values_from_bufr("005001",kye)} {get_values_from_bufr("006001",kye)} {get_values_from_bufr("007030",kye)} {get_values_from_bufr("007031",kye)} {get_values_from_bufr("007007",kye)}'
     oborudovanie = f'{get_values_from_bufr("002011",kye)} {get_values_from_bufr("002013",kye)} {get_values_from_bufr("002014",kye)} {get_values_from_bufr("002003",kye)}'
@@ -68,30 +68,6 @@ def get_data_for_info_pusk(bufr_message, kye=0):
              configur_podveski_zonda, proizvoditel_obolochki, tip_obolochki, massa_obolochki, gaz_dly_napolnenia, kolichestbo_gaza, dlina_podvesa,
              prichina_prikrashenia]
 
-'''dict_descriptor = {
-    'index_station': '001001 001002', \
-    'time_pusk': '004001 004002 004003 004004 004005', \
-    'koordinat': '005001 006001 007030 007031 007007 033024',\
-    'oborudovanie': '002011 002013 002014 002003', \
-    'oblachnost': '008002 020011 020013 020012',\
-    'sdvig_vetra': '031001', 'metod_opredeleniy_visoti': '002191',\
-    'po_versia': '025061', 's_n_zonda': '001081',\
-    'algoritm_popravok_izmereniy_vlagnosti': '002017',\
-    'nesyshay_chastota': '002067', 'datchik_davleniy': '002095',\
-    'datchik_temperatur': '002096\t\t\t\t\t', 'datchik_vlagnosti': '002097',\
-    'nomer_nabludenia': '001082', 'nomer_zondirovania': '001083',\
-    'fio_nabludateliy': '001095', 'nazemnaiy_sistema_priema_signalov': '002066',\
-    'visota': '007007', 'visota_anteni': '002102', 'popravka_azimut': '025065',\
-    'popravka_ygl': '026066', 'radio_ykritie': '002103', 'configur_zonda': '002015',\
-    'configur_podveski_zonda': '002016', 'proizvoditel_obolochki': '002080',\
-    'tip_obolochki': '002081', 'massa_obolochki': '002082',\
-    'gaz_dly_napolnenia': '002084', 'kolichestbo_gaza': '002085',\
-    'dlina_podvesa': '002086', 'prichina_prikrashenia': '035035'
-  # 't': '004086',\
-  # 'P': '007004', 'T': '012101', 'Td': '012103', 'H': '010-009',\
-  # 'D': '011-001', 'V': '011-002', 'dLat': '005015', 'dLon': '006015',\
-  # 'Flags': '008042',
-}'''
 
 # получаем файлы из папки "/folder_with_telegram/" 
 try:
@@ -104,6 +80,8 @@ except Exception as ex:
 if not files:
     print('Не получены файлы для проверки')
     exit()
+
+count_telegram = 0
 
 for file_name in files:
     try:
@@ -150,11 +128,11 @@ for file_name in files:
             print(file_name, ex)
         finally:
             conn.close()
-
+        count_telegram+=1
         if  time.time() - begintime > minut:
             minut+=random.uniform(50,130)
             t = time.time() - begintime
-            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}, обработано {} телеграмм'.format(int(t//3600%24), int(t//60%60), int(t%60), count_telegram))
 
     try:
         os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
