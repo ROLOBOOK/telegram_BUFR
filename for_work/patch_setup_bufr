@@ -1,0 +1,11 @@
+sudo mysql < cao2_base.sql
+
+echo "alias go='python3 for_work/processing_telegram.py'" >> ~/.bashrc
+echo "alias dt='bash for_work/folder_claer.sh'" >>  ~/.bashrc
+echo "alias dbase='bash for_work/clear_base.sh'" >> ~/.bashrc
+echo "alias report='python3 for_work/report.py'" >> ~/.bashrc
+
+alias go='python3 for_work/processing_telegram.py'
+alias dt='bash for_work/folder_claer.sh'
+alias dbase='bash for_work/clear_base.sh'
+alias report='python3 for_work/report.py'

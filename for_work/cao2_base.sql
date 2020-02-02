@@ -69,7 +69,7 @@ ADD CONSTRAINT `12` UNIQUE KEY(`index_station`, `time_pusk`);
 -- create user 'fol` for work to base
 -- -----------------------------------------------------
 
-create user 'fol'@'%' identified by 'Qq123456';
+create user 'archi'@'%' identified by 'Qq123456';
 grant all privileges on *.* to 'fol'@'%';
 flush privileges;
 

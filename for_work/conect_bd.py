@@ -1,5 +1,5 @@
 server = 'localhost'
-username = 'fol'
+username = 'archi'
 password = 'Qq123456'
 bd = 'cao2'
 
