@@ -148,17 +148,16 @@ for file_name in files:
         except Exception as ex:
             log_mistake(file_name, ex)
             print(file_name, ex)
-
+        finally:
+            conn.close()
 
         if  time.time() - begintime > minut:
             minut+=random.uniform(50,130)
             t = time.time() - begintime
             print('Сначала проверки прошло {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
 
-    finally:
-        conn.close()
     try:
-        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_te$
+        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
     except Exception as ex:
         log_mistake(file_name, ex)
 

@@ -9,8 +9,10 @@ pip3 install pybufrkit >>log.txt
 
 pip3 install mysqlclient >>log.txt
 
-echo "alias go='python3 for_work/processing_telegram.py'" > ~/.bashrc
-echo "alias dt='bash for_work/folder_claer.sh'" >  ~/.bashrc
-echo "alias dbase='bash for_work/clear_base.sh'" > ~/.bashrc
+echo "alias go='python3 for_work/processing_telegram.py'" >> ~/.bashrc
+echo "alias dt='bash for_work/folder_claer.sh'" >>  ~/.bashrc
+echo "alias dbase='bash for_work/clear_base.sh'" >> ~/.bashrc
+echo "alias report='python3 for_work/report.py'" >> ~/.bashrc
+
 sudo mysql < cao_base.sql
 

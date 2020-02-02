@@ -1,12 +1,13 @@
-import os, MySQLdb
+import os, MySQLdb, conect_bd
 
 
 
 def get_from_table(VALUES, table):
     try:
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
+        conn = MySQLdb.connect(conect_bd.server, conect_bd.username,\
+                               conect_bd.password, conect_bd.bd, charset="utf8")
         cursor = conn.cursor()
-        cursor.execute(f''' select {VALUES} from {table} order by Stations_numberStation;''')
+        cursor.execute(f''' select {VALUES} from {table} order by index_station;''')
 
     # # Получаем данные.
         data = cursor.fetchall()
@@ -21,7 +22,7 @@ def get_from_table(VALUES, table):
     return data
 
 
-all_releaseZonde = get_from_table('Stations_numberStation, date_start, oborudovanie_zond, text_info','cao.releaseZonde')
+all_releaseZonde = get_from_table("index_station, time_pusk,oborudovanie, text_info", 'cao2.info_pusk' )
 
 
 result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]}\n' for i in all_releaseZonde])
