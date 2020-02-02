@@ -143,7 +143,7 @@ for file_name in files:
 t = time.time() - begintime
 print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
 try:
-    with open(f'{today.strftime("%Y-%m-%d %H:%M")} log_mistake.txt', 'a') as mistake:
+    with open(f'{today.strftime("%Y-%m-%d)} log_mistake.txt', 'a') as mistake:
         print('проверьте файл с ошибками log_mistake.txt')
 except:
     print('ошибок нет')
