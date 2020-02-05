@@ -90,7 +90,11 @@ for file_name in files:
             bufr_message = decoder.process(ins.read())
     except Exception as ex:
         log_mistake(file_name, f'не декодирован, {ex}\n')
-
+        try:
+            os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
+        except Exception as ex:
+            print('oy!')
+        continue
     json_data = FlatJsonRenderer().render(bufr_message)
     d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
     t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
