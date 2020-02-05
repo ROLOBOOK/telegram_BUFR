@@ -24,8 +24,11 @@ def get_values_from_bufr(descriptor, key=0):
     return data[0] if data else None
 
 def decod_b(data):
-    data = [chr(i) for i in data]
-    return ''.join(data).replace(' ', '')
+    try:
+        return data.decode('cp1251')
+    except:
+        data = [chr(i) for i in data]
+        return ''.join(data).replace(' ', '')
 
 def get_data_for_info_pusk(bufr_message, kye=0):
     index_station = '{:03d}{:03d}'.format(get_values_from_bufr("001001",kye),get_values_from_bufr("001002",kye))
@@ -84,6 +87,7 @@ if not files:
 count_telegram = 0
 
 for file_name in files:
+    print(file_name)
     try:
         decoder = Decoder()
         with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
