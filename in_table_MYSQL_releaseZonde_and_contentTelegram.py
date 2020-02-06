@@ -23,8 +23,11 @@ def log_mistake(file_name, ex):
         mistake.write(f'{file_name} - {ex}\n')
 
 def decod_b(data):
-    data = [chr(i) for i in data]
-    return ''.join(data)
+    try:
+        return data.decode('cp1251')
+    except:
+        data = [chr(i) for i in data]
+        return ''.join(data)
 
 
 def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
@@ -106,7 +109,7 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         pressureSensorType= data[16] # Тип датчика давления(002095):4
         carrierFrequency = round(int(data[8])/10**6, 3) # Несущая частота(002067):1680.000
         text_info = data[-1].decode('utf-8') if type(data[-1]) == bytes else None  # Текстовая информация:61616 20312
-        s_n_zonda = data[0].decode('Windows-1251').replace(' ', '') if type(data[0]) == bytes else None # Серийный номеррадиозонда(001081):2279784/0586 
+        s_n_zonda = data[0].decode('cp1251').replace(' ', '') if type(data[0]) == bytes else None # Серийный номеррадиозонда(001081):2279784/0586 
         PO_versia = data[21].decode('utf-8').replace(' ', '') if type(data[21]) == bytes else None  # ПО, версия(025061):212/20152   
         MethodGeopotentialHeight = data[20] # Метод определения геопотенциальной высоты(002191):2
         ugol = json_data[3][2][0][26] # # Поправка к ориентации по углу места(025066):359.00
@@ -152,7 +155,8 @@ try:
     files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and int(file[:5]) in indexs_stations]
 except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
-
+    print('look log')
+    exit()
     
 # подключаемся к базе для записи в таблицу  table1 с данными наблюдений
 try:
