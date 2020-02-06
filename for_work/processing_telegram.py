@@ -84,7 +84,7 @@ except Exception as ex:
 if not files:
     print('Не получены файлы для проверки')
     exit()
-print(f'для проверки загруженно {len(files)} телеграмм.')
+print(f'для проверки загруженно {len(files)} файлов.')
 
 count_telegram = 0
 
@@ -92,7 +92,6 @@ try:
     conn = MySQLdb.connect(conect_bd.server, conect_bd.username,\
                            conect_bd.password, conect_bd.bd, charset="utf8")
     cursor = conn.cursor()
-
 
     for file_name in files:
         try:
@@ -123,7 +122,7 @@ try:
             if not data_in_cao_info_pusk:
                 print(file_name, 'problems')
 
-                cursor.execute('''
+            cursor.execute('''
 	            INSERT IGNORE INTO cao2.info_pusk
 	            (index_station, time_pusk, koordinat, oborudovanie, oblachnost, sdvig_vetra, metod_opredeleniy_visoti, 
 	             po_versia, s_n_zonda, algoritm_popravok_izmereniy_vlagnosti, nesyshay_chastota, datchik_davleniy, 
@@ -132,7 +131,7 @@ try:
 	             configur_podveski_zonda, proizvoditel_obolochki, tip_obolochki, massa_obolochki, gaz_dly_napolnenia, kolichestbo_gaza, dlina_podvesa, 
 	             prichina_prikrashenia, time_srok, text_info)
 	            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_cao_info_pusk)
-                conn.commit()
+            conn.commit()
 
             count_telegram+=1
             if  time.time() - begintime > minut:
