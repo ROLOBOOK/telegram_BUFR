@@ -9,7 +9,7 @@ today = datetime.datetime.now()
 begintime = time.time()
 minut = random.uniform(50,130)
 
-print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}')
+print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}', end=' ')
 
 try:
     from pybufrkit.renderer import FlatJsonRenderer
@@ -108,15 +108,15 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         temperatureSensorType  = data[17]    # # Тип датчика температуры(002096):0
         pressureSensorType= data[16] # Тип датчика давления(002095):4
         carrierFrequency = round(int(data[8])/10**6, 3) # Несущая частота(002067):1680.000
-        text_info = data[-1].decode('utf-8') if type(data[-1]) == bytes else None  # Текстовая информация:61616 20312
+        text_info = data[-1].decode('cp1251') if type(data[-1]) == bytes else None  # Текстовая информация:61616 20312
         s_n_zonda = data[0].decode('cp1251').replace(' ', '') if type(data[0]) == bytes else None # Серийный номеррадиозонда(001081):2279784/0586 
-        PO_versia = data[21].decode('utf-8').replace(' ', '') if type(data[21]) == bytes else None  # ПО, версия(025061):212/20152   
+        PO_versia = data[21].decode('cp1251').replace(' ', '') if type(data[21]) == bytes else None  # ПО, версия(025061):212/20152   
         MethodGeopotentialHeight = data[20] # Метод определения геопотенциальной высоты(002191):2
         ugol = json_data[3][2][0][26] # # Поправка к ориентации по углу места(025066):359.00
         azimut = data[25] # Поправка к ориентации по азимуту(025065):84.50
         h_opor = data[24] # # Высота антенны над основанием опоры(002102):8.0
         groundBasedRradiosondeSignalReceptionSystem = data[7] # # Наземная система приема сигналов радиозондов(002066):6
-        identificator = data[3].decode('utf-8').replace(' ', '') if type(data[3]) == bytes else None # # Идентификация наблюдателей(001095):IGP 
+        identificator = data[3].decode('cp1251').replace(' ', '') if type(data[3]) == bytes else None # # Идентификация наблюдателей(001095):IGP 
         sensingNnumber = data[2] # # Номер зондирования(001083):1
         date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
@@ -138,7 +138,7 @@ try:
     cursor.execute("SELECT numberStation FROM cao.Stations")
 
 # # Получаем данные.
-    indexs_stations = [i[0] for i in cursor.fetchall()]
+    indexs_stations = [str(i[0]) for i in cursor.fetchall()]
     
 except Exception as ex:
     log_mistake('индексы станций не получены', ex)
@@ -152,12 +152,14 @@ finally:
 
 #     files = os.listdir(path="/folder_with_telegram/")
 try:
-    files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and int(file[:5]) in indexs_stations]
+    files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and file[:5] in indexs_stations]
 except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
     print('look log')
     exit()
-    
+print(f'для проверки загруженно {len(files)} файлов.')
+count_telegram = 0
+
 # подключаемся к базе для записи в таблицу  table1 с данными наблюдений
 try:
     conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
@@ -201,15 +203,15 @@ try:
             #             заносим данные в таблицу cao.content_telegram
             cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
-
+            count_telegram+=1
         #     перемещаем проверенный фаыл в папку check_telegramm
         if flag:
             os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
         if  time.time() - begintime > minut:
             minut+=random.uniform(50,130)
             t = time.time() - begintime
-            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
             
+            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}, обработано {} телеграмм'.format(int(t//3600%24), int(t//60%60), int(t%60), count_telegram))
 
 except Exception as ex:
     os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
