@@ -8,7 +8,7 @@ apt-get install -y mysql-server python3-pip samba ssh python-dev default-libmysq
 echo 'app was installing'
 
 pip3 install pybufrkit >>log.txt
-
+pip3 install Progress >> log.txt
 pip3 install mysqlclient >>log.txt
 
 echo 'library was installing'

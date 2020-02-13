@@ -4,12 +4,8 @@
 
 
 import os, MySQLdb, time, random, datetime
+from progress.bar import IncrementalBar
 
-today = datetime.datetime.now()
-begintime = time.time()
-minut = random.uniform(50,130)
-
-print(f'Начало проверки: {today.strftime("%Y-%m-%d %H:%M")}', end=' ')
 
 try:
     from pybufrkit.renderer import FlatJsonRenderer
@@ -157,9 +153,8 @@ except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
     print('look log')
     exit()
-print(f'для проверки загруженно {len(files)} файлов.')
-count_telegram = 0
 
+bar = IncrementalBar('Loading', max = len(files))
 # подключаемся к базе для записи в таблицу  table1 с данными наблюдений
 try:
     conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
@@ -167,6 +162,7 @@ try:
 
 # декодируем burf в юникод
     for file_name in files:
+        bar.next()
         try:
             decoder = Decoder()
             with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
@@ -174,7 +170,7 @@ try:
             json_data = FlatJsonRenderer().render(bufr_message)
         except Exception as ex:
             log_mistake(file_name, f'не декодирован, {ex}\n')
-            
+
 # тут обрабатываем json_data     
         d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
         t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
@@ -203,27 +199,17 @@ try:
             #             заносим данные в таблицу cao.content_telegram
             cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
-            count_telegram+=1
         #     перемещаем проверенный фаыл в папку check_telegramm
         if flag:
             os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
-        if  time.time() - begintime > minut:
-            minut+=random.uniform(50,130)
-            t = time.time() - begintime
-            
-            print('Сначала проверки прошло {:02d}:{:02d}:{:02d}, обработано {} телеграмм'.format(int(t//3600%24), int(t//60%60), int(t%60), count_telegram))
-
 except Exception as ex:
     os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
     log_mistake(file_name, ex)
 # Разрываем подключение.
 finally:
     conn.close()
-t = time.time() - begintime
-print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-
-try:
-    with open('log_mistake.txt', 'r') as f:
+bar.finish()
+if os.path.exists('log_mistake.txt'):
         print('проверьте файл с ошибками log_mistake.txt')
-except:
+else:
     print('ошибок нет')
