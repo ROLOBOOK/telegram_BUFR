@@ -1,2 +1,4 @@
 *.txt
-/folder_with_telegram/*
+/folder_with_telegram/*.*
+/folder_with_telegram/cheking_telegram/*
+/folder_with_telegram/file_with_mistakes/*

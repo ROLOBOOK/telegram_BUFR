@@ -6,7 +6,7 @@
 import os, MySQLdb, time, random, datetime
 from progress.bar import IncrementalBar
 
-today = datetime.datetime.now()
+today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
@@ -15,7 +15,7 @@ except:
     exit()
     
 def log_mistake(file_name, ex):
-    with open(f'{today.strftime("%Y-%m-%d %H:%M")} log_mistake.txt', 'a') as mistake:
+    with open(f'{today} log_mistake.txt', 'a') as mistake:
         mistake.write(f'{file_name} - {ex}\n')
 
 def decod_b(data):
@@ -183,7 +183,6 @@ try:
             if type(data_in_releaseZonde) != type((1,)):
                 log_mistake(file_name, f' ошибка в data_in_releaseZonde {data_in_releaseZonde}')
                 os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
-                flag = False
                 continue
             cursor.execute('''INSERT IGNORE INTO cao.releaseZonde
             (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
@@ -200,8 +199,7 @@ try:
             cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
             conn.commit()
         #     перемещаем проверенный фаыл в папку check_telegramm
-        if flag:
-            os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
+        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
 except Exception as ex:
     os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
     log_mistake(file_name, ex)
@@ -209,7 +207,7 @@ except Exception as ex:
 finally:
     conn.close()
 bar.finish()
-if os.path.exists('log_mistake.txt'):
+if os.path.exists(f'{today} log_mistake.txt'):
         print('проверьте файл с ошибками log_mistake.txt')
 else:
     print('ошибок нет')
