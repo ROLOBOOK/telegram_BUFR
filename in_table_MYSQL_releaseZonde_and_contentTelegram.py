@@ -6,7 +6,7 @@
 import os, MySQLdb, time, random, datetime
 from progress.bar import IncrementalBar
 
-
+today = datetime.datetime.now()
 try:
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
