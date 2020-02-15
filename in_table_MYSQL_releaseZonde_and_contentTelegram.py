@@ -146,6 +146,10 @@ except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
     exit()
 
+if not files:
+    print('Список телеграмм для обработки - пуст!')
+    exit()
+
 bar = IncrementalBar('decode_bufr', max = len(files))
 list_for_release = set()
 list_for_data = set()
