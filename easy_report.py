@@ -16,7 +16,7 @@ except Exception as ex:
     print(ex)
 
 if data_month:
-    result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]} {i[4]}\n' for i in data_month])
+    result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]} {i[4]}\n' for i in data_month]).replace('None', '-          ')
     with open(f'{year}-{month}-{day}_{hour}:00.txt', 'w') as f:
         f.write(result)
     print(f'report file  {year}-{month}-{day} {hour}:00')

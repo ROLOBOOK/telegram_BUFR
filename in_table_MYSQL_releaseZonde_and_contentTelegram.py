@@ -1,7 +1,4 @@
-# !/usr/bin/env python3
-
-# заполняем таблицу cao.content_telegram и releaseZonde с данными наблюдений:
-
+#!/usr/bin/python3
 
 import os, MySQLdb, time, random, datetime
 from progress.bar import IncrementalBar
@@ -21,7 +18,6 @@ def infile(list_data):
     with open('test', 'a') as f:
         f.write(list_data)
 
-
 def log_mistake(file_name, ex):
     with open(f'{today} log_mistake.txt', 'a') as mistake:
         mistake.write(f'{file_name} - {ex}\n')
@@ -34,16 +30,11 @@ def decod_b(data):
         return ''.join(data)
 
 def get_values_from_bufr(descriptor, key=0):
-
     ''' возвращает значение указаного дескриптора из разшифровоной телеграммы'''
-
     data = DataQuerent(NodePathParser()).query(bufr_message, descriptor).get_values(key)
-
     return data[0] if data else None
 
-
 def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
-    
     '''получаем данные для таблицы cao.content_telegram с данными наблюдений'''
     try:
         index_station = '{}{:03d}'.format(data[27],data[28])
@@ -86,26 +77,22 @@ def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
             if type(sloi[i][9]) != float:
                 sloi[i][9] = None
             data_in_table.append((index_station, date, sloi[i][0], sloi[i][2], sloi[i][6], sloi[i][7], sloi[i][3], sloi[i][8], sloi[i][9], sloi[i][4], sloi[i][5], sloi[i][1],))
-
     #     t = 0  flag = 1    P = 2    H = 3    dflat = 4    dlon = 5    T = 6    Td = 7    V = 9    D = 8
     except Exception as ex:
         return  f'ошибка в get_data_from_BUFR - {ex}\n'
 
     return  data_in_table
 
-
 def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
-
-
     ''' получаем данные для таблицы releaseZonde'''
     try:
         index_station = '{}{:03d}'.format(data[27],data[28]) # индекс станции
         coordinateStation = ' '.join(map(str, data[41:46])) # координаты станции
        # oborudovanie = data[30]
         #zond = data[-1].decode('utf-8').split()[-1] if type(data[-1]) == bytes else None
-        oborudovanie_zond = '{:03d} {:02d} {:03d} {:02d}'.format(data[30], data[31], data[32], data[33]) #  оборудование + 
+        oborudovanie_zond = '{:03d} {:02d} {:03d} {:02d}'.format(data[30], data[31], data[32], data[33]) #  оборудование +
         device = ' '.join(map(str, data[30:34])) # оборудование вся строка
-        height = data[23] # высота станици 
+        height = data[23] # высота станици
         number_look = data[1] # # Номер наблюдения(001082):421
         lengthOfTheSuspension = data[15]  # # Длина подвеса к оболочке(002086):13.00
         amountOfGas  = data[14]  # # Количество газа используемого в радиозондовой оболочке(002085):1.200
@@ -121,27 +108,23 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         pressureSensorType= data[16] # Тип датчика давления(002095):4
         carrierFrequency = round(int(data[8])/10**6, 3) # Несущая частота(002067):1680.000
         text_info = data[-1].decode('cp1251') if type(data[-1]) == bytes else None  # Текстовая информация:61616 20312
-        s_n_zonda = data[0].decode('cp1251').replace(' ', '') if type(data[0]) == bytes else None # Серийный номеррадиозонда(001081):2279784/0586 
-        PO_versia = data[21].decode('cp1251').replace(' ', '') if type(data[21]) == bytes else None  # ПО, версия(025061):212/20152   
+        s_n_zonda = data[0].decode('cp1251').replace(' ', '') if type(data[0]) == bytes else None # Серийный номеррадиозонда(001081):2279784/0586
+        PO_versia = data[21].decode('cp1251').replace(' ', '') if type(data[21]) == bytes else None  # ПО, версия(025061):212/20152
         MethodGeopotentialHeight = data[20] # Метод определения геопотенциальной высоты(002191):2
         ugol = json_data[3][2][0][26] # # Поправка к ориентации по углу места(025066):359.00
         azimut = data[25] # Поправка к ориентации по азимуту(025065):84.50
         h_opor = data[24] # # Высота антенны над основанием опоры(002102):8.0
         groundBasedRradiosondeSignalReceptionSystem = data[7] # # Наземная система приема сигналов радиозондов(002066):6
-        identificator = data[3].decode('cp1251').replace(' ', '') if type(data[3]) == bytes else None # # Идентификация наблюдателей(001095):IGP 
+        identificator = data[3].decode('cp1251').replace(' ', '') if type(data[3]) == bytes else None # # Идентификация наблюдателей(001095):IGP
         sensingNnumber = data[2] # # Номер зондирования(001083):1
         date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
         return f'get_data_for_table_releaseZonde -{ex}'
-    return [index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
+    return [index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension,
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
            pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
            groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start]
-
-# номерстанции дата время P T Td H D V dLat dLon Flags
-# Stations_numberStation date time  P T Td H D V dLat dLon Flags
-
 
 # получаем индексы станций из базы
 try:
@@ -149,88 +132,89 @@ try:
     cursor = conn.cursor()
     cursor.execute("SELECT numberStation FROM cao.Stations")
 
-# # Получаем данные.
     indexs_stations = [str(i[0]) for i in cursor.fetchall()]
-
 except Exception as ex:
     log_mistake('индексы станций не получены', ex)
-
-# Разрываем подключение.
 finally:
     conn.close()
 
 
-# получаем файлы из папки "/folder_with_telegram/" 
-
-#     files = os.listdir(path="/folder_with_telegram/")
+# получаем файлы из папки "/folder_with_telegram/"
 try:
     files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and file[:5] in indexs_stations]
 except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
     exit()
 
-bar = IncrementalBar('Loading', max = len(files))
-# подключаемся к базе для записи в таблицу  table1 с данными наблюдений
+bar = IncrementalBar('decode_bufr', max = len(files))
+list_for_release = set()
+list_for_data = set()
+
+# декодируем burf в юникод
+for file_name in files:
+    bar.next()
+    try:
+        decoder = Decoder()
+        with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
+            bufr_message = decoder.process(ins.read())
+        json_data = FlatJsonRenderer().render(bufr_message)
+    except Exception as ex:
+        log_mistake(file_name, f'не декодирован, {ex}\n')
+        continue
+# тут обрабатываем json_data
+    d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
+    t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
+    date = f'{d} {t}' # дата и срок выпуска
+
+    for i in range(len(json_data[3][2])):  #  если несколько телеграмм в одном файле все обработаем
+
+        data_in_content_telegram = get_data_from_BUFR(json_data[3][2][i], date)
+        if type(data_in_content_telegram) != type([]):
+            log_mistake(file_name, f'ошибка в data_in_content_telegram {data_in_content_telegram}')
+            continue
+        list_for_data.add(tuple(data_in_content_telegram))
+
+        data_in_releaseZonde = get_data_for_table_releaseZonde(json_data[3][2][i], date)
+        if type(data_in_releaseZonde) != type([]):
+            log_mistake(file_name, f' ошибка в data_in_releaseZonde {data_in_releaseZonde}')
+            continue
+        prichina = get_values_from_bufr('035035', i)
+        data_in_releaseZonde.append(prichina)
+        list_for_release.add(tuple(data_in_releaseZonde))
+    os.remove(f'folder_with_telegram/{file_name}')
+bar.finish()
+# подключаемся к базе для записи в таблицу
+bar_for_release = IncrementalBar('Load_metad_data', max = len(list_for_release))
+bar_for_data = IncrementalBar('Load_telemetriy', max = len(list_for_data))
 try:
     conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
     cursor = conn.cursor()
-
-# декодируем burf в юникод
-    for file_name in files:
-        bar.next()
-        try:
-            decoder = Decoder()
-            with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
-                bufr_message = decoder.process(ins.read())
-            json_data = FlatJsonRenderer().render(bufr_message)
-        except Exception as ex:
-            log_mistake(file_name, f'не декодирован, {ex}\n')
-
-# тут обрабатываем json_data
-        d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
-        t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
-        date = f'{d} {t}' # дата и срок выпуска
-
-        for i in range(len(json_data[3][2])):  #  если несколько телеграмм в одном файле все обработаем
-
-            data_in_content_telegram = get_data_from_BUFR(json_data[3][2][i], date)
-            if type(data_in_content_telegram) != type([]):
-                log_mistake(file_name, f'ошибка в data_in_content_telegram {data_in_content_telegram}')
-            #             заносим данные в таблицу cao.content_telegram
-            cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
-                                  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
-            conn.commit()
-
-            # получаем данные для таблицы cao.releaseZonde, заносим их в базу
-            data_in_releaseZonde = get_data_for_table_releaseZonde(json_data[3][2][i], date)
-            if type(data_in_releaseZonde) != type([]):
-                log_mistake(file_name, f' ошибка в data_in_releaseZonde {data_in_releaseZonde}')
-                continue
-            prichina = get_values_from_bufr('035035', i)
- #           if not prichina:
- #               continue
-            data_in_releaseZonde.append(prichina)
-           # infile(data_in_releaseZonde)
-            cursor.execute('''INSERT IGNORE INTO cao.releaseZonde
-            (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
-            amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
-            configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
-           pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
-           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start, prichina)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
-            conn.commit()
-
-        #     перемещаем проверенный фаыл в папку check_telegramm
-#        os.remove(f'folder_with_telegram/{file_name}')
-
+    for i in list_for_release:
+        bar_for_release.next()
+        cursor.execute('''INSERT IGNORE INTO cao.releaseZonde
+        (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
+        amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
+        configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
+       pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
+       groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start, prichina)
+       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',i)
+        conn.commit()
+    bar_for_release.finish()
+    for i in list_for_data:
+        bar_for_data.next()
+        cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
+                              VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',i)
+        conn.commit()
+    bar_for_data.finish()
 except Exception as ex:
-    log_mistake(file_name, ex)
+    log_mistake('ошибка при загрузке в базу', ex)
 #    os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
-# Разрываем подключение.
 finally:
     conn.close()
-bar.finish()
+
 if os.path.exists(f'{today} log_mistake.txt'):
         print('проверьте файл с ошибками log_mistake.txt')
 else:
-    print('ошибок нет')
+    print('Обработка телеграмм закончена')
+
+#os.system('touch 123')
