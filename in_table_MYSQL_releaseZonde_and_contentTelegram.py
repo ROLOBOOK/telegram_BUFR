@@ -7,13 +7,21 @@ import os, MySQLdb, time, random, datetime
 from progress.bar import IncrementalBar
 
 today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
+
 try:
+    from pybufrkit.dataquery import NodePathParser, DataQuerent
     from pybufrkit.renderer import FlatJsonRenderer
     from pybufrkit.decoder import Decoder
 except:
     print("установите библиотеки install_pip3_and_pybufrkit.sh из папки for_work и перезапустите скрипт")
     exit()
-    
+
+def infile(list_data):
+    list_data = '{}\n'.format(' '.join([str(i) for i in list_data]))
+    with open('test', 'a') as f:
+        f.write(list_data)
+
+
 def log_mistake(file_name, ex):
     with open(f'{today} log_mistake.txt', 'a') as mistake:
         mistake.write(f'{file_name} - {ex}\n')
@@ -24,6 +32,14 @@ def decod_b(data):
     except:
         data = [chr(i) for i in data]
         return ''.join(data)
+
+def get_values_from_bufr(descriptor, key=0):
+
+    ''' возвращает значение указаного дескриптора из разшифровоной телеграммы'''
+
+    data = DataQuerent(NodePathParser()).query(bufr_message, descriptor).get_values(key)
+
+    return data[0] if data else None
 
 
 def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
@@ -74,14 +90,14 @@ def get_data_from_BUFR(data, date='0000-00-00 00:00:00'):
     #     t = 0  flag = 1    P = 2    H = 3    dflat = 4    dlon = 5    T = 6    Td = 7    V = 9    D = 8
     except Exception as ex:
         return  f'ошибка в get_data_from_BUFR - {ex}\n'
-        
+
     return  data_in_table
- 
+
 
 def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
 
 
-    ''' получаем данные для таблицы releaseZonde''' 
+    ''' получаем данные для таблицы releaseZonde'''
     try:
         index_station = '{}{:03d}'.format(data[27],data[28]) # индекс станции
         coordinateStation = ' '.join(map(str, data[41:46])) # координаты станции
@@ -117,11 +133,11 @@ def get_data_for_table_releaseZonde(data, date='0000-00-00 00:00:00'):
         date_start = '{}-{}-{} {}:{}:{:02d}'.format(data[35],data[36],data[37],data[38],data[39],data[40])
     except Exception as ex:
         return f'get_data_for_table_releaseZonde -{ex}'
-    return (index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
+    return [index_station, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
            pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
-           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start)
+           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start]
 
 # номерстанции дата время P T Td H D V dLat dLon Flags
 # Stations_numberStation date time  P T Td H D V dLat dLon Flags
@@ -135,15 +151,15 @@ try:
 
 # # Получаем данные.
     indexs_stations = [str(i[0]) for i in cursor.fetchall()]
-    
+
 except Exception as ex:
     log_mistake('индексы станций не получены', ex)
 
 # Разрываем подключение.
 finally:
     conn.close()
-    
-    
+
+
 # получаем файлы из папки "/folder_with_telegram/" 
 
 #     files = os.listdir(path="/folder_with_telegram/")
@@ -151,7 +167,6 @@ try:
     files = [file for file in os.listdir(path="./folder_with_telegram/") if file[-3:] == 'bin' and file[:5] in indexs_stations]
 except Exception as ex:
     log_mistake("ошибка получения списка телеграмм для  - ", f'{ex}\n')
-    print('look log')
     exit()
 
 bar = IncrementalBar('Loading', max = len(files))
@@ -171,38 +186,46 @@ try:
         except Exception as ex:
             log_mistake(file_name, f'не декодирован, {ex}\n')
 
-# тут обрабатываем json_data     
+# тут обрабатываем json_data
         d = '{}-{:02d}-{:02d}'.format(json_data[1][-6], json_data[1][-5], json_data[1][-4])
         t = '{:02d}:{:02d}:{:02d}'.format(json_data[1][-3], json_data[1][-2], json_data[1][-1] )
         date = f'{d} {t}' # дата и срок выпуска
-        flag = True #перемещать файл или нет
 
-        for data in json_data[3][2]:  #  если несколько телеграмм в одном файле все обработаем
+        for i in range(len(json_data[3][2])):  #  если несколько телеграмм в одном файле все обработаем
+
+            data_in_content_telegram = get_data_from_BUFR(json_data[3][2][i], date)
+            if type(data_in_content_telegram) != type([]):
+                log_mistake(file_name, f'ошибка в data_in_content_telegram {data_in_content_telegram}')
+            #             заносим данные в таблицу cao.content_telegram
+            cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
+                                  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
+            conn.commit()
+
             # получаем данные для таблицы cao.releaseZonde, заносим их в базу
-            data_in_releaseZonde = get_data_for_table_releaseZonde(data, date)
-            if type(data_in_releaseZonde) != type((1,)):
+            data_in_releaseZonde = get_data_for_table_releaseZonde(json_data[3][2][i], date)
+            if type(data_in_releaseZonde) != type([]):
                 log_mistake(file_name, f' ошибка в data_in_releaseZonde {data_in_releaseZonde}')
-                os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
                 continue
+            prichina = get_values_from_bufr('035035', i)
+ #           if not prichina:
+ #               continue
+            data_in_releaseZonde.append(prichina)
+           # infile(data_in_releaseZonde)
             cursor.execute('''INSERT IGNORE INTO cao.releaseZonde
             (Stations_numberStation, date, coordinateStation, oborudovanie_zond, height, number_look, lengthOfTheSuspension, 
             amountOfGas, gasForFillingTheShell, filling, weightOfTheShell, typeShell, radiosondeShellManufacturer,
             configurationOfRadiosondeSuspension, configurationOfTheRadiosonde, typeOfHumiditySensor, temperatureSensorType,
            pressureSensorType, carrierFrequency, text_info, s_n_zonda, PO_versia, MethodGeopotentialHeight, ugol, azimut, h_opor,
-           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
+           groundBasedRradiosondeSignalReceptionSystem, identificator, sensingNnumber, date_start, prichina)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s, %s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_releaseZonde)
             conn.commit()
-            data_in_content_telegram = get_data_from_BUFR(data, date)
-            if type(data_in_content_telegram) != type([]):
-                log_mistake(file_name, f'ошибка в data_in_content_telegram {data_in_content_telegram}')
-            #             заносим данные в таблицу cao.content_telegram
-            cursor.executemany('''INSERT IGNORE INTO cao.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)  VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',data_in_content_telegram)
-            conn.commit()
+
         #     перемещаем проверенный фаыл в папку check_telegramm
-        os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/cheking_telegram/{file_name}')
+#        os.remove(f'folder_with_telegram/{file_name}')
+
 except Exception as ex:
-    os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
     log_mistake(file_name, ex)
+#    os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/file_with_mistakes/{file_name}')
 # Разрываем подключение.
 finally:
     conn.close()
