@@ -4,7 +4,7 @@ import os, MySQLdb, time, random, datetime
 from progress.bar import IncrementalBar
 
 today = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
-
+begin = time.time()
 try:
     from pybufrkit.dataquery import NodePathParser, DataQuerent
     from pybufrkit.renderer import FlatJsonRenderer
@@ -185,7 +185,7 @@ for file_name in files:
         prichina = get_values_from_bufr('035035', i)
         data_in_releaseZonde.append(prichina)
         list_for_release.add(tuple(data_in_releaseZonde))
-    os.remove(f'folder_with_telegram/{file_name}')
+#    os.remove(f'folder_with_telegram/{file_name}')
 bar.finish()
 # подключаемся к базе для записи в таблицу
 bar_for_release = IncrementalBar('Load_metad_data', max = len(list_for_release))
@@ -220,5 +220,6 @@ if os.path.exists(f'{today} log_mistake.txt'):
         print('проверьте файл с ошибками log_mistake.txt')
 else:
     print('Обработка телеграмм закончена')
-
+t = time.time()-begin
 #os.system('touch 123')
+print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
