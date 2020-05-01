@@ -28,7 +28,7 @@ def get_list_file():
                 ftp.chdir(day)
                 if '0000' in ftp.listdir():
                     files.extend([f'./0000/{file}' for file in ftp.listdir('0000') if file.endswith('bin')])
-                if '1200' in ftp/listdir():
+                if '1200' in ftp.listdir():
                     files.extend([f'./1200/{file}' for file in ftp.listdir() if file.endswith('bin')])
     
     return files
@@ -162,7 +162,7 @@ def main():
 
         try:
             decoder = Decoder()
-            with open(file_name, 'rb') as ins: #
+            with ftp.open(file_name, 'rb') as ins: #
                 bufr_message = decoder.process(ins.read())
             # декодируем телеграмму в текстовый файл
             text_bufr = NestedTextRenderer().render(bufr_message)
