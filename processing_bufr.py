@@ -7,18 +7,8 @@ from datetime import date, timedelta
 from for_work.ssh_connect import server,name,password,port
 
 
-def get_list_file():
-    # получаем вчерашню дату
-    yesterday = date.today() - timedelta(days=1)
-    year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
+def get_list_file(ftp):
 
-    # подключаемся к серверу с телеграммами
-    ssh=paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
-    #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
-    ssh.connect(server,username=name,password=password, port=port)
-    print(f'connect to server {server}')
-    ftp=ssh.open_sftp()
     files = []
     if year in ftp.listdir():
         ftp.chdir(year)
@@ -147,7 +137,19 @@ def get_index_srok_from_bd():
 
 
 def main():
-    files = get_list_file()
+    # получаем вчерашню дату
+    yesterday = date.today() - timedelta(days=1)
+    year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
+
+    # подключаемся к серверу с телеграммами
+    ssh=paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
+    #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
+    ssh.connect(server,username=name,password=password, port=port)
+    print(f'connect to server {server}')
+    ftp = ssh.open_sftp()
+
+    files = get_list_file(ftp)
     if not files:
         print('Не получены файлы для проверки')
         exit()
