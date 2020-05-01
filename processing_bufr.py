@@ -1,12 +1,30 @@
 from pybufrkit.renderer import FlatTextRenderer, NestedTextRenderer
 from pybufrkit.dataquery import NodePathParser, DataQuerent
 from pybufrkit.decoder import Decoder
-import os,time,re, logging, datetime, MySQLdb
+import os,time,re, logging, datetime, MySQLdb, paramiko
 from progress.bar import IncrementalBar
+from datetime import date, timedelta
+from for_work.ssh_connect import server,name,password,port
 
 
-def get_list_file(path):
-    return [file for file in os.listdir(path) if file[-3:] == 'bin']
+def get_list_file():
+    # получаем вчерашню дату
+    yesterday = date.today() - timedelta(days=1)
+    year, month, day = yesterday.strftime('%Y.%m.%d').splt('.')
+
+    # подключаемся к серверу с телеграммами
+    ssh=paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
+    #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
+    ssh.connect(server,username=name,password=password, port=port)
+
+    ftp=ssh.open_sftp()
+    ftp.chdir(f'{year}/{month}/{day}/0000')
+    files = [f'./0000/{file}' for file in ftp.listdir() if file.endswith('bin')]
+    ftp.chdir('../1200')
+    files.extend([f'./1200/{file}' for file in ftp.listdir() if file.endswith('bin')])
+    ftp.chdir('..') 
+    return files
 
 
 def get_metadate(file_name, data, time_srok):
@@ -53,9 +71,9 @@ def get_telemetria(index_station, date_srok, telegram):
 def set_in_bd(meta_in_bd, tele_in_bd):
 
     try:
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'test', charset="utf8")
+        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
-        cursor.executemany('''INSERT IGNORE INTO test.releaseZonde
+        cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.releaseZonde
             (Stations_numberStation, time_srok, time_pusk, koordinat, oborudovanie, oblachnost, GEOPOTENTIAL_HEIGHT_CALCULATION_002191,
             SOFTWARE_IDENTIFICATION_AND_VERSION_NUMBER_025061, RADIOSONDE_SERIAL_NUMBER_001081,
             CORRECTION_ALGORITHMS_FOR_HUMIDITY_MEASUREMENTS_002017, RADIOSONDE_OPERATING_FREQUENCY_002067,
@@ -70,7 +88,7 @@ def set_in_bd(meta_in_bd, tele_in_bd):
 		
 		
         for lines in tele_in_bd:
-            cursor.executemany('''INSERT IGNORE INTO test.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
+            cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
 
@@ -110,7 +128,7 @@ def get_index_srok_from_bd():
     try:
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
         cursor = conn.cursor()
-        cursor.execute("SELECT Stations_numberStation,time_srok FROM test.releaseZonde")
+        cursor.execute("SELECT Stations_numberStation,time_srok FROM cao_bufr_v2.releaseZonde")
 
         info_srok_in_bd = cursor.fetchall()
     except Exception as ex:
@@ -122,7 +140,7 @@ def get_index_srok_from_bd():
 
 
 def main():
-    files = get_list_file('./folder_with_telegram/')
+    files = get_list_file()
     if not files:
         print('Не получены файлы для проверки')
         exit()
@@ -137,7 +155,7 @@ def main():
 
         try:
             decoder = Decoder()
-            with open(f'folder_with_telegram/{file_name}', 'rb') as ins: #
+            with open(file_name, 'rb') as ins: #
                 bufr_message = decoder.process(ins.read())
             # декодируем телеграмму в текстовый файл
             text_bufr = NestedTextRenderer().render(bufr_message)
@@ -161,7 +179,7 @@ def main():
         pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
         list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
 
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'test', charset="utf8")
+        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
         # получаем данные из телеграмм
         for telegram in list_telegrams_in_bufr:
@@ -185,7 +203,7 @@ def main():
         pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
         list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
 
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'test', charset="utf8")
+        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
         # получаем данные из телеграмм
         for telegram in list_telegrams_in_bufr:
