@@ -8,7 +8,9 @@ from for_work.ssh_connect import server,name,password,port
 
 
 def get_list_file(ftp):
-
+    # получаем вчерашню дату
+    yesterday = date.today() - timedelta(days=1)
+    year, month, day = yesterday.strftime('%Y.%m.%d').split('.')    
     files = []
     if year in ftp.listdir():
         ftp.chdir(year)
@@ -137,9 +139,7 @@ def get_index_srok_from_bd():
 
 
 def main():
-    # получаем вчерашню дату
-    yesterday = date.today() - timedelta(days=1)
-    year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
+
 
     # подключаемся к серверу с телеграммами
     ssh=paramiko.SSHClient()
