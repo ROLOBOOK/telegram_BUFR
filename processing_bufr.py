@@ -10,20 +10,27 @@ from for_work.ssh_connect import server,name,password,port
 def get_list_file():
     # получаем вчерашню дату
     yesterday = date.today() - timedelta(days=1)
-    year, month, day = yesterday.strftime('%Y.%m.%d').splt('.')
+    year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
 
     # подключаемся к серверу с телеграммами
     ssh=paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
     #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
     ssh.connect(server,username=name,password=password, port=port)
-
+    print(f'connect to server {server}')
     ftp=ssh.open_sftp()
-    ftp.chdir(f'{year}/{month}/{day}/0000')
-    files = [f'./0000/{file}' for file in ftp.listdir() if file.endswith('bin')]
-    ftp.chdir('../1200')
-    files.extend([f'./1200/{file}' for file in ftp.listdir() if file.endswith('bin')])
-    ftp.chdir('..') 
+    files = []
+    if year in ftp.listdir():
+        ftp.chdir(year)
+        if month in ftp.listdir():
+            ftp.chdir(month)
+            if day in ftp/listdir():
+                ftp.chdir(day):
+                if '0000' in ftp/listdir():
+                    files.extend([f'./0000/{file}' for file in ftp.listdir('0000') if file.endswith('bin')])
+                if '1200' in ftp/listdir():
+                    files.extend([f'./1200/{file}' for file in ftp.listdir() if file.endswith('bin')])
+    
     return files
 
 
