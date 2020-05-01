@@ -1,2 +1,3 @@
 *.txt
 /folder_with_telegram/*.*
+__pycache__
