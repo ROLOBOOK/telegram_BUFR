@@ -83,9 +83,7 @@ def set_in_bd(meta_in_bd, tele_in_bd):
             descriptor_035035, text_info_ValueData_205060)
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
         conn.commit()
-		
-		
-		bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
+        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
             bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
