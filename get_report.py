@@ -2,10 +2,10 @@ import MySQLdb, datetime
 name = input('year month day hour: ')
 year, month, day,hour = name.split()
 
-conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'test', charset="utf8")
+conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
 
 cursor = conn.cursor()
-cursor.execute(f''' select Stations_numberStation, time_pusk, oborudovanie, text_info_ValueData_205060 from test.releaseZonde
+cursor.execute(f''' select Stations_numberStation, time_pusk, oborudovanie, text_info_ValueData_205060 from cao_bufr_v2.releaseZonde
 where year(time_srok) = {year} and month(time_srok) = {month} and day(time_srok) = {day} and hour(time_srok) = {hour}
 order by Stations_numberStation;''')
 
