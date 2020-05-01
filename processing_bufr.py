@@ -25,7 +25,7 @@ def get_list_file():
         if month in ftp.listdir():
             ftp.chdir(month)
             if day in ftp/listdir():
-                ftp.chdir(day):
+                ftp.chdir(day)
                 if '0000' in ftp/listdir():
                     files.extend([f'./0000/{file}' for file in ftp.listdir('0000') if file.endswith('bin')])
                 if '1200' in ftp/listdir():
