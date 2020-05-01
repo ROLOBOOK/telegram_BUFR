@@ -199,33 +199,33 @@ def main():
 
 
 
-        # делим телеграмму на разделы
-        pattern = r'<<<<<< section [0-9] >>>>>>'
-        list_decod_bufr = re.split(pattern, text_bufr)
-        words = ['year','month','day','hour','minute','second']
-        date_list = [int(re.search(r'{} = \d{}'.format(word, '{0,5}'),
-            list_decod_bufr[2]).group().split(' = ')[-1]) for word in words]
-        date_srok = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(date_list[0],
-                date_list[1], date_list[2], date_list[3], date_list[4], date_list[5])
+            # делим телеграмму на разделы
+            pattern = r'<<<<<< section [0-9] >>>>>>'
+            list_decod_bufr = re.split(pattern, text_bufr)
+            words = ['year','month','day','hour','minute','second']
+            date_list = [int(re.search(r'{} = \d{}'.format(word, '{0,5}'),
+                list_decod_bufr[2]).group().split(' = ')[-1]) for word in words]
+            date_srok = '{:04d}-{:02d}-{:02d} {:02d}:{:02d}:{:02d}'.format(date_list[0],
+                    date_list[1], date_list[2], date_list[3], date_list[4], date_list[5])
 
-        # если в бафре несколько телеграмм
-        pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
-        list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
+            # если в бафре несколько телеграмм
+            pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
+            list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
 
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
-        cursor = conn.cursor()
-        # получаем данные из телеграмм
-        for telegram in list_telegrams_in_bufr:
-            meta_info = get_metadate(file_name, telegram, date_srok)
-            if not meta_info or meta_info in info_srok_in_bd:
-                continue
+            conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
+            cursor = conn.cursor()
+            # получаем данные из телеграмм
+            for telegram in list_telegrams_in_bufr:
+                meta_info = get_metadate(file_name, telegram, date_srok)
+                if not meta_info or meta_info in info_srok_in_bd:
+                    continue
 
-            meta_in_bd.add(meta_info)
+                meta_in_bd.add(meta_info)
 
-            index_station = meta_info[0]
-            telemetry_info = get_telemetria(index_station, date_srok, telegram)
+                index_station = meta_info[0]
+                telemetry_info = get_telemetria(index_station, date_srok, telegram)
 
-            tele_in_bd.add(tuple(telemetry_info))
+                tele_in_bd.add(tuple(telemetry_info))
 
 
         # перемещаем проверенный файл
