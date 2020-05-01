@@ -68,7 +68,7 @@ def get_telemetria(index_station, date_srok, telegram):
 
 
 def set_in_bd(meta_in_bd, tele_in_bd):
-
+    
     try:
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
@@ -85,12 +85,13 @@ def set_in_bd(meta_in_bd, tele_in_bd):
         conn.commit()
 		
 		
-		
+		bar = IncrementalBar('in_bd_bufr', max = len(files))
         for lines in tele_in_bd:
+            bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
-
+        bar.finish()
     except:
         logging('ошибка при загрузке в базу', 1)
 
