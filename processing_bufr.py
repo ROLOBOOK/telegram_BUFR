@@ -195,7 +195,7 @@ def main():
             if not meta_info:
                 meta_info = f'{meta_info[0]}:{meta_info[1]}'
                 if meta_info in info_srok_in_bd:
-                continue
+                    continue
 
 
 
