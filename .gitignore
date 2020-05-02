@@ -1,3 +1,5 @@
 *.txt
 /folder_with_telegram/*.*
 __pycache__
+for_work/ssh_connect.py
+

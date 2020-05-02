@@ -11,7 +11,7 @@ def get_list_file(ftp, days=2):
     # получаем вчерашню дату
     yesterday = date.today() - timedelta(days=days)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
-    print(yesterday.strftime('%Y.%m.%d'))
+#    print(yesterday.strftime('%Y.%m.%d'))
     files = []
     if year in ftp.listdir():
         ftp.chdir(year)
@@ -84,13 +84,13 @@ def set_in_bd(meta_in_bd, tele_in_bd):
             descriptor_035035, text_info_ValueData_205060)
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
         conn.commit()
-        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
+#        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
-            bar.next()
+#            bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
-        bar.finish()
+#        bar.finish()
     except:
         logging('ошибка при загрузке в базу', 1)
 
@@ -146,21 +146,21 @@ def main(days=2):
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
     #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
     ssh.connect(server,username=name,password=password, port=port)
-    print(f'connect to server {server}')
+#    print(f'connect to server {server}')
     ftp = ssh.open_sftp()
 
     files = get_list_file(ftp, days=days)
     if not files:
-        print('Не получены файлы для проверки')
+#        print('Не получены файлы для проверки')
         exit()
     meta_in_bd = set()
     tele_in_bd = set()
 
     info_srok_in_bd = get_index_srok_from_bd()
-    bar = IncrementalBar('decode_bufr', max = len(files))
+#    bar = IncrementalBar('decode_bufr', max = len(files))
 
     for file_name in files:
-        bar.next()
+#        bar.next()
 
         try:
             decoder = Decoder()
@@ -228,7 +228,7 @@ def main(days=2):
 
 
 
-    bar.finish()
+#    bar.finish()
     set_in_bd(meta_in_bd, tele_in_bd)
 
 if __name__ == '__main__':
