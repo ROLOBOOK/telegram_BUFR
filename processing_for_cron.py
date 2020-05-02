@@ -135,7 +135,7 @@ def get_index_srok_from_bd():
         log_mistake('индексы станций не получены', ex)
     finally:
         conn.close()
-    return [f'{i[0]}:{i[1]}' for i in info_srok_in_bd]
+    return set([f'{i[0]}:{i[1]}' for i in info_srok_in_bd])
 
 
 
@@ -220,7 +220,7 @@ def main(days=2):
                     continue
 
                 meta_in_bd.add(meta_info)
-
+                info_srok_in_bd.add(meta_inf)
                 index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
 

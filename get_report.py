@@ -19,6 +19,13 @@ order by Stations_numberStation;''')
 data_month = cursor.fetchall()
 data.extend(data_month)
 
+with open('for_work/index.txt', 'r') as f:
+    r = f.read()
+index_russian = [index.split()[0] for index in r.split('\n') if index]
+
+data = [dat for dat in data if dat[0] in index_russian]
+
+
 if data:
     os.chdir('../../report_bufr_day')
     result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]}\n' for i in data]).replace('None', '-          ')
