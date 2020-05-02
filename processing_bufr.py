@@ -21,7 +21,7 @@ def get_list_file(ftp):
                 if '0000' in ftp.listdir():
                     files.extend([f'./0000/{file}' for file in ftp.listdir('0000') if file.endswith('bin')])
                 if '1200' in ftp.listdir():
-                    files.extend([f'./1200/{file}' for file in ftp.listdir() if file.endswith('bin')])
+                    files.extend([f'./1200/{file}' for file in ftp.listdir('1200') if file.endswith('bin')])
     
     return files
 
@@ -83,13 +83,13 @@ def set_in_bd(meta_in_bd, tele_in_bd):
             descriptor_035035, text_info_ValueData_205060)
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
         conn.commit()
-        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
+        #bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
-            bar.next()
+            #bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
-        bar.finish()
+        #bar.finish()
     except:
         logging('ошибка при загрузке в базу', 1)
 
@@ -156,10 +156,10 @@ def main():
     tele_in_bd = set()
 
     info_srok_in_bd = get_index_srok_from_bd()
-    bar = IncrementalBar('decode_bufr', max = len(files))
+   #bar = IncrementalBar('decode_bufr', max = len(files))
 
     for file_name in files:
-        bar.next()
+        #bar.next()
 
         try:
             decoder = Decoder()
@@ -211,8 +211,8 @@ def main():
             pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
             list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
 
-            conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
-            cursor = conn.cursor()
+            # conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
+            # cursor = conn.cursor()
             # получаем данные из телеграмм
             for telegram in list_telegrams_in_bufr:
                 meta_info = get_metadate(file_name, telegram, date_srok)
@@ -227,9 +227,8 @@ def main():
                 tele_in_bd.add(tuple(telemetry_info))
 
 
-        # перемещаем проверенный файл
-        # os.rename(f'folder_with_telegram/{file_name}', f'folder_with_telegram/checking_files/{file_name}')
-    bar.finish()
+    
+    #bar.finish()
     set_in_bd(meta_in_bd, tele_in_bd)
 
 if __name__ == '__main__':
