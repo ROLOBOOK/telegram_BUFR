@@ -9,7 +9,7 @@ from for_work.ssh_connect import server,name,password,port
 
 def get_list_file(ftp):
     # получаем вчерашню дату
-    yesterday = date.today() - timedelta(days=1)
+    yesterday = date.today() - timedelta(days=2)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')    
     files = []
     if year in ftp.listdir():
