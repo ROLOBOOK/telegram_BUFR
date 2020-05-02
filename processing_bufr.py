@@ -7,7 +7,7 @@ from datetime import date, timedelta
 from for_work.ssh_connect import server,name,password,port
 
 
-def get_list_file(ftp):
+def get_list_file(ftp, days=2):
     # получаем вчерашню дату
     yesterday = date.today() - timedelta(days=2)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')    
@@ -83,13 +83,13 @@ def set_in_bd(meta_in_bd, tele_in_bd):
             descriptor_035035, text_info_ValueData_205060)
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
         conn.commit()
-        #bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
+        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
-            #bar.next()
+            bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
-        #bar.finish()
+        bar.finish()
     except:
         logging('ошибка при загрузке в базу', 1)
 
@@ -137,7 +137,7 @@ def get_index_srok_from_bd():
 
 
 
-def main():
+def main(days=2):
 
 
     # подключаемся к серверу с телеграммами
@@ -156,10 +156,10 @@ def main():
     tele_in_bd = set()
 
     info_srok_in_bd = get_index_srok_from_bd()
-   #bar = IncrementalBar('decode_bufr', max = len(files))
+    bar = IncrementalBar('decode_bufr', max = len(files))
 
     for file_name in files:
-        #bar.next()
+        bar.next()
 
         try:
             decoder = Decoder()
@@ -193,9 +193,10 @@ def main():
         for telegram in list_telegrams_in_bufr:
             meta_info = get_metadate(file_name, telegram, date_srok)
             if not meta_info:
-                meta_info = f'{meta_info[0]}:{meta_info[1]}'
-                if meta_info in info_srok_in_bd:
-                    continue
+                continue
+            meta_info = f'{meta_info[0]}:{meta_info[1]}'
+            if meta_info in info_srok_in_bd:
+                continue
 
 
 
@@ -230,7 +231,7 @@ def main():
 
 
     
-    #bar.finish()
+    bar.finish()
     set_in_bd(meta_in_bd, tele_in_bd)
 
 if __name__ == '__main__':
