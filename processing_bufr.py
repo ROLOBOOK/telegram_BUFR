@@ -133,7 +133,7 @@ def get_index_srok_from_bd():
         log_mistake('индексы станций не получены', ex)
     finally:
         conn.close()
-    return info_srok_in_bd
+    return [f'{i[0]}:{i[1]}' for i in info_srok_in_bd]
 
 
 
@@ -192,7 +192,9 @@ def main():
         # получаем данные из телеграмм
         for telegram in list_telegrams_in_bufr:
             meta_info = get_metadate(file_name, telegram, date_srok)
-            if not meta_info or meta_info in info_srok_in_bd:
+            if not meta_info:
+                meta_info = f'{meta_info[0]}:{meta_info[1]}'
+                if meta_info in info_srok_in_bd:
                 continue
 
 
