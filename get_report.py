@@ -25,12 +25,25 @@ index_russian = [index.split()[0] for index in r.split('\n') if index]
 
 data = [dat for dat in data if dat[0] in index_russian]
 
+dir_list = os.listdir('/home/bufr/reports')
+dir_month_now = f'report_{month}{year}'
+if dir_month_now not in dir_list:
+    os.mkdir(f'/home/bufr/reports/{dir_month_now}')
+
+dir_list = os.listdir('/home/bufr/reports')
+dir_month_now = f'report_{month}{year}'
+if dir_month_now not in dir_list:
+    os.mkdir(f'/home/bufr/reports/{dir_month_now}')
+
+dir_list = os.listdir(f'/home/bufr/reports/{dir_month_now}')
+if 'report_bufr_day' not in dir_list:
+    os.mkdir(f'/home/bufr/reports/{dir_month_now}/report_bufr_day')
 
 if data:
-    os.chdir('../../report_bufr_day')
+    os.chdir(f'/home/bufr/reports/{dir_month_now}/report_bufr_day')
     result = ''.join([f'{i[1]} {i[0]} {i[2]} {i[3]}\n' for i in data]).replace('None', '-          ')
 
-    with open(f'{year}-{month}-{day}_00:00-12:00.txt', 'w') as f:
+    with open(f'отчет_за_сутки_{year}-{month}-{day}.txt', 'w') as f:
         f.write(result)
     print(f'report file  {year}-{month}-{day} {hour}:00')
 else:
