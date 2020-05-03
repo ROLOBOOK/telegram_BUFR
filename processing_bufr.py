@@ -50,6 +50,9 @@ def get_metadate(file_name, data, time_srok):
                              '035035']
         and_lost = [parsing(i, data) for i in list_descriptions]
         text_info = parsing('205060', data)
+        if text_info == '__':
+            text_info = parsing('205011', data)
+
         return (index_station, time_srok, time_pusk, koordinat, oborudovanie, oblachnost) + tuple(and_lost) + (text_info,)
     except ValueError as ex:
         logging(file_name, ex)
@@ -119,6 +122,11 @@ def parsing(pattern, data):
             answer = '{:.1f}'.format(float(res) - 273.15)
         elif pattern in ('005015', '006015'):
             answer = '{:.4f}'.format(float(res))
+        elif pattern == '205011':
+            temp = '{} {}'.format(*result.group().split()[-2:])
+            answer = re.search(r'\d+ \d+', temp)
+            if answer:
+                answer = answer.group()
         else:
             answer = result.group().split()[-1]
         return answer
