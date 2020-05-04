@@ -44,7 +44,7 @@ table = 'Данные о выпусках\n'
 for ugms,indexs in sorted(ugms_dict.items()):
     table += f'{ugms}\n{" ":21}{first_string_table}\n'
     # проходим по списку станций в угмс
-    for index in sorted(indexs, key=lambda x: index_name_dict[x]):
+    for index in sorted(indexs):
     # пишем данные о сроках 00
         string_time_00 = ''.join(["__|" if day in index_date_00_dict[index] else " N|" for day in range(1,len_month+1)])
         table += f'{index_name_dict[index]:>21} 00: |{string_time_00} всего {len(index_date_00_dict[index])}\n'
