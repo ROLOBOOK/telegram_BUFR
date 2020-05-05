@@ -27,7 +27,7 @@ cursor.execute(f'''select Stations_numberStation,  time_srok from cao_bufr_v2.re
 data_month_00 = cursor.fetchall()
 cursor.execute(f'''select Stations_numberStation,  time_srok from cao_bufr_v2.releaseZonde where year(time_srok)={now.year} and month(time_srok)={month_now} and hour(time_srok)=12 order by day(time_srok);''')
 data_month_12 = cursor.fetchall()
-
+conn.close()
 # делаем два словаря индекс станции - список дней когда был выпуск
 index_date_00_dict = {i:[] for i in index_name_dict.keys()}
 index_date_12_dict = {i:[] for i in index_name_dict.keys()}
@@ -65,5 +65,5 @@ dir_month_now = f'report_{month_now:02d}{now.year}'
 if dir_month_now not in dir_list:
     os.mkdir(f'/home/bufr/reports/{dir_month_now}')
 
-with open(f'/home/bufr/reports/{dir_month_now}/выпуски_зондов_{now.year}-{now.month}.nill', 'w') as f:
+with open(f'/home/bufr/reports/{dir_month_now}/{now.year}{now.month:02d}{now.year}{now.month}.nill', 'w') as f:
     f.write(table)

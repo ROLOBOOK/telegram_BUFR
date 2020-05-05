@@ -3,7 +3,8 @@ import calendar,datetime,MySQLdb,os
 
 def work_with_dict(list_):
     index_date_dict = {i:{day:'' for day in range(1,month_now + 1)} for i in index_name_dict.keys()}
-    for index_day_dicriptor in list_:
+    list_ = [(i[0],i[1],int(i[2])) if i[2].isdigit() else (i[0],i[1],0) for i in list_]
+    for index_day_dicriptor in sorted(list_, key=lambda x: (x[0],x[2])):
         if index_date_dict.get(index_day_dicriptor[0],0):
             index_date_dict[index_day_dicriptor[0]][index_day_dicriptor[1].day] = index_day_dicriptor[2]
     return index_date_dict
@@ -35,7 +36,7 @@ cursor.execute(f'''select Stations_numberStation, time_srok, H from cao_bufr_v2.
 data_month_00 = cursor.fetchall()
 cursor.execute(f'''select Stations_numberStation, time_srok, H from cao_bufr_v2.last_H where year(time_srok)={now.year} and month(time_srok)={month_now} and hour(time_srok)=12 order by day(time_srok);''')
 data_month_12 = cursor.fetchall()
-
+conn.close()
 
 #index_date_12_dict = {i:{day:'' for day in range(1,month_now + 1} for i in index_name_dict.keys()}
 #[index_date_12_dict[index_day[0]].append(index_day[1:].day) for index_day in data_month_12 if index_day[0] in index_name_dict]

@@ -167,6 +167,21 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
+-- -----------------------------------------------------
+
+-- Table `cao_bufr_v2`.`last_H`
+
+-- -----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS `cao_bufr_v2`.`last_H` (
+  `id` INT NOT NULL auto_increment,
+  `Stations_numberStation` VARCHAR(45) NOT NULL,
+  `time_srok` DATETIME NULL,
+  `H` VARCHAR(45) NULL,
+  PRIMARY KEY (`id`))
+ENGINE = InnoDB;
+
+
 
 
 -- -----------------------------------------------------

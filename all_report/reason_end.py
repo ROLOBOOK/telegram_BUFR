@@ -35,7 +35,7 @@ cursor.execute(f'''select Stations_numberStation, time_srok, descriptor_035035 f
 data_month_00 = cursor.fetchall()
 cursor.execute(f'''select Stations_numberStation, time_srok, descriptor_035035 from cao_bufr_v2.releaseZonde where year(time_srok)={now.year} and month(time_srok)={month_now} and hour(time_srok)=12 order by day(time_srok);''')
 data_month_12 = cursor.fetchall()
-
+conn.close()
 
 # делаем два словаря индекс станции - список дней когда был выпуск
 #index_date_00_dict = {i:{day:'' for day in range(1,month_now + 1} for i in index_name_dict.keys()}

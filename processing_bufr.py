@@ -26,6 +26,13 @@ def get_list_file(ftp, days=2):
 
     return files
 
+def get_last_h(list_):
+    if list_:
+        temp =  [i[6] for i in  list_ if i and len(i) > 7 and i[6].isdigit()]
+        if temp:
+            return sorted(temp)[-1]
+    return '-'
+
 
 def get_metadate(file_name, data, time_srok):
     try:
@@ -71,7 +78,7 @@ def get_telemetria(index_station, date_srok, telegram):
     return [(index_station, date_srok, *[parsing(descriptor, telemetry) for descriptor in list_descriptions]) for telemetry in telemetry_list[1:]]
 
 
-def set_in_bd(meta_in_bd, tele_in_bd):
+def set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd):
 
     try:
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
@@ -93,7 +100,10 @@ def set_in_bd(meta_in_bd, tele_in_bd):
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
+
         bar.finish()
+        cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.last_H (Stations_numberStation, time_srok, H) VALUES (%s,%s,%s)''', last_H_in_bd)
+        conn.commit()
     except:
         logging('ошибка при загрузке в базу', 1)
 
@@ -163,6 +173,7 @@ def main(days=2):
         exit()
     meta_in_bd = set()
     tele_in_bd = set()
+    last_H_in_bd = set()
 
     info_srok_in_bd = get_index_srok_from_bd()
     bar = IncrementalBar('decode_bufr', max = len(files))
@@ -224,20 +235,19 @@ def main(days=2):
                 if not meta_info:
                     continue
                 meta_inf = f'{meta_info[0]}:{meta_info[1]}'
-                if meta_inf in info_srok_in_bd:
-                    continue
-
-                meta_in_bd.add(meta_info)
-                info_srok_in_bd.add(meta_inf)
+                if meta_inf not in info_srok_in_bd:
+                    meta_in_bd.add(meta_info)
+                    info_srok_in_bd.add(meta_inf)
                 index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
-
-                tele_in_bd.add(tuple(telemetry_info))
-
-
+                if  telemetry_info:
+                    last_H = (telemetry_info[-1][0],telemetry_info[-1][1], get_last_h(telemetry_info))
+                    if last_H not in last_H_in_bd:
+                        tele_in_bd.add(tuple(telemetry_info))
+                        last_H_in_bd.add(last_H)
 
     bar.finish()
-    set_in_bd(meta_in_bd, tele_in_bd)
+    set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
 
 if __name__ == '__main__':
 
@@ -245,6 +255,7 @@ if __name__ == '__main__':
     main()
     t = time.time()-begin
     print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+
 
 
 
