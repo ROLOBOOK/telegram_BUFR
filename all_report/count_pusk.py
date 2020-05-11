@@ -41,5 +41,5 @@ table += f'По УГМС за месяц {sum_month}'
 
 
 
-save_report(table, file_name='nill')
+save_report(table, file_name='bnill')
 

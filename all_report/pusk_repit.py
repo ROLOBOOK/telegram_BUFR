@@ -24,10 +24,10 @@ for ugms,indexs in sorted(ugms_dict.items()):
     # проходим по списку станций в угмс
     for index in sorted(indexs):
     # пишем данные о сроках 00
-        string_time_00 = ''.join([f"{index_date_00_dict[index][day]:>2}|" if index_date_00_dict[index].get(day, 0)  else "--|" for day in range(1,len_month+1)])
+        string_time_00 = ''.join([f"{index_date_00_dict[index][day]:>2}|" if index_date_00_dict[index].get(day, 0) and index_date_00_dict[index].get(day, 0) != 1  else "--|" for day in range(1,len_month+1)])
         table += f'{index_name_dict[index]:>21} 00: |{string_time_00}\n'
         # записываем данные о сроках 12
-        string_time_12 = ''.join([f"{index_date_12_dict[index][day]:>2}|" if index_date_12_dict[index].get(day, 0)  else "--|" for day in range(1,len_month+1)])
+        string_time_12 = ''.join([f"{index_date_12_dict[index][day]:>2}|" if index_date_12_dict[index].get(day, 0) and index_date_12_dict[index].get(day, 0) != 1  else "--|" for day in range(1,len_month+1)])
         table += f'{index}{" ":17}12: |{string_time_12}\n'
     # считаем суммы выпусков за месяц
 

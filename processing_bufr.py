@@ -28,7 +28,7 @@ def get_list_file(ftp, days=2):
 
 def get_last_h(list_):
     if list_:
-        temp =  [i[6] for i in  list_ if i and len(i) > 7 and i[6].isdigit()]
+        temp =  [int(i[6]) for i in  list_ if i and len(i) > 7 and i[6].isdigit()]
         if temp:
             return sorted(temp)[-1]
     return '-'
@@ -157,7 +157,7 @@ def get_index_srok_from_bd():
 
 
 
-def main(days=2):
+def main(days=10):
 
     # подключаемся к серверу с телеграммами
     ssh=paramiko.SSHClient()

@@ -10,6 +10,6 @@ days = int(str(c).split()[0])
 
 today = datetime.datetime.now()
 
-for day_one in range(2,5):
+for day_one in range(2,9):
     main(days=day_one)
 
