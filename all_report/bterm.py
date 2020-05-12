@@ -6,13 +6,14 @@ def work_with_dict(list_):
 #'''записываем в словарь даные {индекс_cтанции: {день : данные}} '''
     index_date_dict = {i:[] for i in index_name_dict.keys()}
     for index_day_dicriptor in list_:
-        if index_day_dicriptor[0] in index_date_dict and index_day_dicriptor[-1] not in ('__', '1'):
+        if index_day_dicriptor[0] in index_date_dict:
             index_date_dict[index_day_dicriptor[0]].append(index_day_dicriptor[1:])
     return index_date_dict
 
 def make_row (number,index, index_date_dic):
     row = ''
-    for data_srok in index_date_dic[index]:
+#    print(index, *sorted([i[:2] for i in index_date_dic[index]],key=lambda x: x[0],reverse=True),sep='\n')
+    for data_srok in sorted(index_date_dic[index]):
         date = data_srok[0].strftime('%Y-%m-%d')
         srok = data_srok[0].strftime('%H')
         temp_kod_zonda = data_srok[1].split()[0]
@@ -26,9 +27,9 @@ def make_row (number,index, index_date_dic):
 
 #делаем словарь для подсчета причина окончания выпуска - тип зонда - количество в месяц
 dic_index_ugms = {data[0]:data[-1] for data in rr}
-list_temp = ['027', '128','129','053', '058', '160','162','068','069','075', '076', '088', '089','03']
+list_temp = ['027', '128','129','053', '058', '160','162','068','069','075', '076', '088', '089','03','119']
 dic_temp_1 = {i:0 for i in list_temp}
-list_tetm_2 = ['4','5','8','9','11','12','14','15','17']
+list_tetm_2 = ['4','5','8','9','11','12','14','15','17', '1','2','3','6','7','30']
 dic_temp_2 = {i:{i:0 for i in list_temp} for i in list_tetm_2}
 ugms_with_sum = {ugms:{i:{i:0 for i in list_temp} for i in list_tetm_2} for ugms in ugms_list}
 
@@ -72,15 +73,17 @@ for ugms,indexs in sorted(ugms_dict.items()):
     table += f'{"-"*57}\n\n'
 
 
-    table2 = f'{"-"*76}\nИтого|' + ''.join([f'{i:^4}|' for i in list_temp[:-1]]) + f'03xx|\n{"-"*76}\n'
+    table2 = f'{"-"*82}\nИтого|' + ''.join([f'{i:^4}|' for i in list_temp[:-1]]) + f'03xx|\n{"-"*82}\n'
     for reason, type_zonda in ugms_with_sum[ugms].items():
         empty = ' '
         row_type_zond = ''.join([f'{type_zonda[i]:^4}|' if type_zonda[i] else f"{empty:4}|" for i in list_temp])
         table2 += f'{reason:^5}|{row_type_zond}\n'
 
-    table2 += f"{'-'*76}"
+    table2 += f"{'-'*82}"
     table += table2
-
+    table+= '''\n\n\n1\tРазрыв оболочки\n2\tОбледенение оболочки\n3\tЗависание оболочки\n6\tОтказ наземного оборудования\n7\tРадиопомехи
+13\tПринудительное прекращение\n30\tДругие причины\n\n4\tЗатухание/пропажа сигнала\n5\tОтказ батареи\n8\tОтказ радиозонда\n9\tПропуски/разброс телеметирии
+11\tПропуски темпертаруты\n14\tПропал сигнал\n15\tСрыв сопровождения\n17\tДлительные пропуски или недостоверные данные\n'''
     dir_list = os.listdir('/home/bufr/reports')
     dir_month_now = f'report_{month_now:02d}{now.year}'
     if dir_month_now not in dir_list:
