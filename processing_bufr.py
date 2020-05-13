@@ -5,6 +5,18 @@ import os,time,re, logging, datetime, MySQLdb, paramiko
 from progress.bar import IncrementalBar
 from datetime import date, timedelta
 from for_work.ssh_connect import server,name,password,port
+from  collections import Counter
+
+def del_duble(set_):
+    double = [i for i in Counter([i[:2] for i in set_]).items() if i[1] > 1]
+    list_double = [i[0][0] for i in double]
+    list_for_del = set()
+    for data in set_:
+        if  data[0] in list_double and data[-2] == '__':
+            list_for_del.add(data)
+    for i in list_for_del:
+        set_.remove(i)
+    return set_
 
 
 def get_list_file(ftp, days=2):
@@ -111,10 +123,11 @@ def set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd):
         conn.close()
 
 def logging(file, ex):
-    ''' записывает в лог две переданые строки'''
-    today = datetime.datetime.now()
-    with open(f'{today.strftime("%Y-%m-%d")} log_mistake.txt', 'a') as mistake:
-        mistake.write(f'{file} - {ex}\n')
+#    ''' записывает в лог две переданые строки'''
+#    today = datetime.datetime.now()
+#    with open(f'{today.strftime("%Y-%m-%d")} log_mistake.txt', 'a') as mistake:
+#        mistake.write(f'{file} - {ex}\n')
+    pass
 
 def parsing(pattern, data):
     result = re.search(r'{} .*'.format(pattern), data)
@@ -146,18 +159,21 @@ def get_index_srok_from_bd():
     try:
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao', charset="utf8")
         cursor = conn.cursor()
-        cursor.execute("SELECT Stations_numberStation,time_srok FROM cao_bufr_v2.releaseZonde")
+        cursor.execute("SELECT Stations_numberStation,time_srok,time_pusk FROM cao_bufr_v2.releaseZonde")
 
         info_srok_in_bd = cursor.fetchall()
     except Exception as ex:
         log_mistake('индексы станций не получены', ex)
     finally:
         conn.close()
-    return set([f'{i[0]}:{i[1]}' for i in info_srok_in_bd])
+    result = set()
+    for i in info_srok_in_bd:
+        t1 = i[1].strftime('%Y-%m-%d %H:%M:%S')
+        t2 = i[2].strftime('%Y-%m-%d %H:%M:%S')
+        result.add(f'{i[0]}:{t1}:{t2}')
+    return result
 
-
-
-def main(days=10):
+def main(days=2):
 
     # подключаемся к серверу с телеграммами
     ssh=paramiko.SSHClient()
@@ -234,10 +250,10 @@ def main(days=10):
                 meta_info = get_metadate(file_name, telegram, date_srok)
                 if not meta_info:
                     continue
-                meta_inf = f'{meta_info[0]}:{meta_info[1]}'
+                meta_inf = f'{meta_info[0]}:{meta_info[1]}:[meta_info[2]'
                 if meta_inf not in info_srok_in_bd:
-                    meta_in_bd.add(meta_info)
-                    info_srok_in_bd.add(meta_inf)
+                     meta_in_bd.add(meta_info)
+
                 index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
                 if  telemetry_info:
@@ -247,12 +263,17 @@ def main(days=10):
                         last_H_in_bd.add(last_H)
 
     bar.finish()
+
+    meta_in_bd = del_duble(meta_in_bd)
+
     set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
+
+
 
 if __name__ == '__main__':
 
     begin = time.time()
-    main()
+    main(days=2)
     t = time.time()-begin
     print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
 
