@@ -1,9 +1,9 @@
 from pybufrkit.renderer import FlatTextRenderer, NestedTextRenderer
 from pybufrkit.dataquery import NodePathParser, DataQuerent
 from pybufrkit.decoder import Decoder
-import os,time,re, logging, datetime, MySQLdb, paramiko
+import os,time,re, logging, datetime, MySQLdb, paramiko,sys
 from progress.bar import IncrementalBar
-from datetime import date, timedelta
+from datetime import date, timedelta,datetime
 from for_work.ssh_connect import server,name,password,port
 from  collections import Counter
 
@@ -170,7 +170,7 @@ def get_index_srok_from_bd():
     for i in info_srok_in_bd:
         t1 = i[1].strftime('%Y-%m-%d %H:%M:%S')
         t2 = i[2].strftime('%Y-%m-%d %H:%M:%S')
-        result.add(f'{i[0]}:{t1}:{t2}')
+        result.add(f'{i[0]}:{t2}')
     return result
 
 def main(days=2):
@@ -250,10 +250,9 @@ def main(days=2):
                 meta_info = get_metadate(file_name, telegram, date_srok)
                 if not meta_info:
                     continue
-                meta_inf = f'{meta_info[0]}:{meta_info[1]}:[meta_info[2]'
-                if meta_inf not in info_srok_in_bd:
+                meta_inf = f'{meta_info[0]}:{meta_info[2]}'
+                if meta_inf not  in info_srok_in_bd:
                      meta_in_bd.add(meta_info)
-
                 index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
                 if  telemetry_info:
@@ -271,12 +270,44 @@ def main(days=2):
 
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1].isdigit():
+        day_ago = sys.argv[1]
+        y = int(day_ago[:4])
+        m = int(day_ago[4:6])
+        d = int(day_ago[6:8])
+        day_chek = datetime(y,m,d)
+        sterday = datetime.now() - day_chek
+        datenow = day_chek.strftime('%Y.%m.%d')
+        answer = input(f'Начать проверку за {datenow}(y/n):')
+        if answer in ('y','yes','да','д','ok'):
+            print('start')
+            begin = time.time()
+            main(days=sterday.days)
+            t = time.time()-begin
+            print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+        else:
+            print('введенно не првапильное число или вы отказались от проверки')
+    elif len(sys.argv) == 3 and sys.argv[1].isdigit() and sys.argv[2].isdigit():
+        d1 = sys.argv[1]
+        d2 = sys.argv[2]
+        date1 = datetime(int(d1[:4]), int(d1[4:6]), int(d1[6:8])) 
+        date2 = datetime(int(d2[:4]), int(d2[4:6]), int(d2[6:8]))
+        num1 = datetime.now() - date1
+        num2 = datetime.now() - date2
+        dat1 =  date1.strftime('%Y.%m.%d')
+        dat2 = date2.strftime('%Y.%m.%d')
+        answer = input(f'Начать проверку за {dat1}-{dat2}(y/n):')
+        if answer in ('y','yes','да','д','ok'):
+            for i in range(num2.days,num1.days+1):
+                main(days=i)
 
-    begin = time.time()
-    main(days=2)
-    t = time.time()-begin
-    print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-
+    else:
+        answer = input('Начать проверку за вчерашний день? (д/н)')
+        if answer in ('y','yes','да','д','ok'):
+            begin = time.time()
+            main(days=1)
+            t = time.time()-begin
+            print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
 
 
 

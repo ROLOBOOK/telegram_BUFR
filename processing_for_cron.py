@@ -5,8 +5,7 @@ import os,time,re, logging, datetime, MySQLdb, paramiko
 from progress.bar import IncrementalBar
 from datetime import date, timedelta
 from for_work.ssh_connect import server,name,password,port
-
-
+from  collections import Counter
 
 def del_duble(set_):
     double = [i for i in Counter([i[:2] for i in set_]).items() if i[1] > 1]
@@ -174,7 +173,7 @@ def get_index_srok_from_bd():
     return result
 
 
-def main(days=2):
+def main(days=1):
 
     # подключаемся к серверу с телеграммами
     ssh=paramiko.SSHClient()
@@ -266,6 +265,7 @@ def main(days=2):
 
 
 #    bar.finish()
+#удаляем дубли образованые первой и второй частью телеграмм
     meta_in_bd = del_duble(meta_in_bd)
 
     set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)

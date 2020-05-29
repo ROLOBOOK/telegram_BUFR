@@ -3,7 +3,7 @@ from datetime import date, timedelta
 
 
 data = []
-yesterday = date.today() - timedelta(days=2)
+yesterday = date.today() - timedelta(days=1)
 year, month, day = yesterday.strftime('%Y.%m.%d').split('.') 
 hour = '00'
 conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
