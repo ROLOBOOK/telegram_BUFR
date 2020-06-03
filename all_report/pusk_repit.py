@@ -2,7 +2,6 @@ from base_report import *
 
 
 
-
 # подключаемся к базе получаем список данных за сроки 00 и 12
 data_month_00, data_month_12 = load_data_from_bd('descriptor_001083')
 

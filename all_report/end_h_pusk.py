@@ -1,8 +1,6 @@
 from  base_report import *
 
 
-
-
 data_month_00, data_month_12 =  load_data_from_bd('H',table_db='last_H')
 
 index_date_00_dict = work_with_dict(data_month_00)
