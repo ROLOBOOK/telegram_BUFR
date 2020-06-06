@@ -114,10 +114,11 @@ CREATE TABLE IF NOT EXISTS `cao_bufr_v2`.`releaseZonde` (
 
   PRIMARY KEY (`idRelease`))
 
+
 ENGINE = InnoDB;
 
 
-
+alter table releaseZonde add unique index index_time (Stations_numberStation, time_srok,time_pusk);
 
 
 

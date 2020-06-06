@@ -168,6 +168,7 @@ def get_index_srok_from_bd():
         conn.close()
     result = set()
     for i in info_srok_in_bd:
+        if not i[1] or not i[2]: continue
         t1 = i[1].strftime('%Y-%m-%d %H:%M:%S')
         t2 = i[2].strftime('%Y-%m-%d %H:%M:%S')
         result.add(f'{i[0]}:{t2}')
@@ -252,6 +253,7 @@ def main(days=2):
                     continue
                 meta_inf = f'{meta_info[0]}:{meta_info[2]}'
                 if meta_inf not  in info_srok_in_bd:
+                     #print(f'{meta_inf} - уже в базе')
                      meta_in_bd.add(meta_info)
                 index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
@@ -264,7 +266,7 @@ def main(days=2):
     bar.finish()
 
     meta_in_bd = del_duble(meta_in_bd)
-
+#    return meta_in_bd ,info_srok_in_bd
     set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
 
 

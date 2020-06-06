@@ -166,7 +166,8 @@ def get_index_srok_from_bd():
     finally:
         conn.close()
     result = set()
-    for i in info_srok_in_bd: 
+    for i in info_srok_in_bd:
+        if not i[1] or not i[2]: continue
         t1 = i[1].strftime('%Y-%m-%d %H:%M:%S')
         t2 = i[2].strftime('%Y-%m-%d %H:%M:%S')
         result.add(f'{i[0]}:{t1}:{t2}')
