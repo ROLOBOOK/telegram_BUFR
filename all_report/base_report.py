@@ -1,4 +1,4 @@
-import calendar,datetime,MySQLdb,os
+import calendar,datetime,MySQLdb,os,sys
 
 
 with open('../for_work/index.txt', 'r') as f:
@@ -26,6 +26,17 @@ len_month = calendar.monthrange(now.year, now.month)[1]
 month_now = now.month
 year_now = now.year
 
+if len(sys.argv) == 2 and sys.argv[1].isdigit():
+    now = sys.argv[1]
+    y = int(now[:4])
+    m = int(now[4:6])
+    now = datetime.datetime(y, m, 28)
+    len_month = calendar.monthrange(now.year, now.month)[1]
+    month_now = now.month
+    year_now = now.year
+
+
+
 def work_with_dict(list_):
 #'''записываем в словарь даные {индекс_cтанции: {день : данные}} '''
     index_date_dict = {i:{day:'' for day in range(1,month_now + 1)} for i in index_name_dict.keys()}
@@ -49,7 +60,7 @@ def load_data_from_bd(decriptor_2,decriptor='time_srok', month_now=month_now ,ye
 
 
 
-def save_report(table,now=now,file_name='txt'):
+def save_report(table,now=now,file_name='txt',month_now=month_now):
     #  проверяем есть ли папка с именем текущего месяца, делаем если нет и записываем переданый файл
     dir_list = os.listdir('/home/bufr/reports')
     dir_month_now = f'report_{month_now:02d}{now.year}'

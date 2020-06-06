@@ -1,21 +1,7 @@
-avg1 = '''select Stations_numberStation,sum(H) from cao_bufr_v2.last_H 
-where  h!='-' and month(time_srok)=5 group by Stations_numberStation;'''
-
-avg2 = '''select Stations_numberStation,avg(H) from cao_bufr_v2.last_H
- where  h!='-' and month(time_srok)=5 group by Stations_numberStation;'''
-
-count_pusk = '''select Stations_numberStation, count(Stations_numberStation) from cao_bufr_v2.releaseZonde
- where month(time_srok)=5 group by Stations_numberStation;'''
-
-count_oborudovanie = '''select Stations_numberStation, oborudovanie from cao_bufr_v2.releaseZonde
- where month(time_srok)=5;'''
-
-count_end = '''select Stations_numberStation, descriptor_035035 from cao_bufr_v2.releaseZonde where month(time_srok)=5;'''
-
-
-
 from base_report import *
 from collections import Counter
+
+
 
 def get_data_from_bd(table='releaseZonde', columns='Stations_numberStation', criterion='',month=month_now):
     conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
@@ -26,8 +12,6 @@ def get_data_from_bd(table='releaseZonde', columns='Stations_numberStation', cri
     return data
 
 
-typy_zonde = {'МРЗ-3АК':('058','089'), 'МРЗ-3МК':('162',),'МРЗ-Н1':('119',),'АК2-2м':('03',),'РЗМ-2':('068','069'),
-              'И-2012':('153','160'),'Ошибочный код':('',)}
 
 count_pusk_month = get_data_from_bd(columns='Stations_numberStation, count(Stations_numberStation)',
                                     criterion=f'where month(time_srok)={month_now} group by Stations_numberStation')
@@ -95,18 +79,17 @@ for ugms,stations in sorted(ugms_dict.items()):
 
         else:
             table += f'|{index_name_dict[index]:18}|{0:^8}|{0:^10}|{0:^12}|{0:^9}|{0:^9}|{0:^8}|{0:^8}|{0:^7}|{0:^6}|{0:^15}|{0:^3}|{0:^3}|{0:^3}|{0:^3}|{0:^4}|{0:^8}|\n'
- 
+
     sum_h_ugms = sum([dict_[index][0] for index in stations if index in dict_])
     sum_plan = round(sum_h_ugms/(len_month*2*len(stations)) * 100,2)
     h =[dict_[index][2] for index in stations if index in dict_] 
-    midl_h = str(sum(h)// len(h))
+    midl_h = str(sum(h)// len(h)) if len(h) else 0
     table += f'|{ugms[:15]:16}{len(stations):>2}|{str(sum_h_ugms):^8}|{sum_plan:^10}|{midl_h:^12}|{sum(ugms_sum[0]):^9}|{sum(ugms_sum[1]):^9}|{sum(ugms_sum[2]):^8}|{sum(ugms_sum[3]):^8}|{sum(ugms_sum[4]):^7}|{sum(ugms_sum[5]):^6}|{sum(ugms_sum[6]):^15}|{sum(ugms_sum[7]):^3}|{sum(ugms_sum[8]):^3}|{sum(ugms_sum[9]):^3}|{sum(ugms_sum[10]):^3}|{sum(ugms_sum[11]):^4}|{sum(ugms_sum[12]):^8}|\n{top}\n'
 
 
-    all_in_list = [sum_h_ugms,sum_plan,midl_h] + [i[0] for i in ugms_sum]
+    all_in_list = [sum_h_ugms,sum_plan,midl_h] + [i[0] for i in ugms_sum if i]
     [rf[i].append(counts) for i,counts in enumerate(all_in_list)]
 
-#print(sum([int(i) for i in rf[2]]), sep='\n\n\n')
 all_stations = []
 for stations in ugms_dict.values():
     for  i in stations:
@@ -118,14 +101,4 @@ table += f'|{"По РФ":14} {len(all_stations):>3}|{sum(rf[0]):^8}|{round(sum(r
 
 
 
-
-
-
-
-
-
-
-
-
-
-save_report(table, file_name='bstat')
+save_report(table, file_name='bstat',now=now,month_now=month_now)
