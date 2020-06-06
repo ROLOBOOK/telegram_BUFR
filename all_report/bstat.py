@@ -92,21 +92,27 @@ for ugms,stations in sorted(ugms_dict.items()):
 
             [ugms_sum[i].append(zond) for i,zond in enumerate((mp3_pak,mp3_3mk,mp3_h1,ak2_2m,p3m_2,u_2012,mistake_cod,one,six,seven,eight,fortin,other))]
             table += f'|{index_name_dict[index]:18}|{str(dict_[index][0]):^8}|{str(dict_[index][1]):^10}|{str(dict_[index][2]):^12}|{mp3_pak:^9}|{mp3_3mk:^9}|{mp3_h1:^8}|{ak2_2m:^8}|{p3m_2:^7}|{u_2012:^6}|{mistake_cod:^15}|{one:^3}|{six:^3}|{seven:^3}|{eight:^3}|{fortin:^4}|{other:^8}|\n'
-    print(stations)
+
+        else:
+            table += f'|{index_name_dict[index]:18}|{0:^8}|{0:^10}|{0:^12}|{0:^9}|{0:^9}|{0:^8}|{0:^8}|{0:^7}|{0:^6}|{0:^15}|{0:^3}|{0:^3}|{0:^3}|{0:^3}|{0:^4}|{0:^8}|\n'
+ 
     sum_h_ugms = sum([dict_[index][0] for index in stations if index in dict_])
-    sum_plan = round((sum_h_ugms*len(stations))/(len_month*2) * 100,2)
+    sum_plan = round(sum_h_ugms/(len_month*2*len(stations)) * 100,2)
     h =[dict_[index][2] for index in stations if index in dict_] 
     midl_h = str(sum(h)// len(h))
-    table += f'|{ugms[:17]:18}|{str(sum_h_ugms):^8}|{sum_plan:^10}|{midl_h:^12}|{sum(ugms_sum[0]):^9}|{sum(ugms_sum[1]):^9}|{sum(ugms_sum[2]):^8}|{sum(ugms_sum[3]):^8}|{sum(ugms_sum[4]):^7}|{sum(ugms_sum[5]):^6}|{sum(ugms_sum[6]):^15}|{sum(ugms_sum[7]):^3}|{sum(ugms_sum[8]):^3}|{sum(ugms_sum[9]):^3}|{sum(ugms_sum[10]):^3}|{sum(ugms_sum[11]):^4}|{sum(ugms_sum[12]):^8}|\n{top}\n'
+    table += f'|{ugms[:15]:16}{len(stations):>2}|{str(sum_h_ugms):^8}|{sum_plan:^10}|{midl_h:^12}|{sum(ugms_sum[0]):^9}|{sum(ugms_sum[1]):^9}|{sum(ugms_sum[2]):^8}|{sum(ugms_sum[3]):^8}|{sum(ugms_sum[4]):^7}|{sum(ugms_sum[5]):^6}|{sum(ugms_sum[6]):^15}|{sum(ugms_sum[7]):^3}|{sum(ugms_sum[8]):^3}|{sum(ugms_sum[9]):^3}|{sum(ugms_sum[10]):^3}|{sum(ugms_sum[11]):^4}|{sum(ugms_sum[12]):^8}|\n{top}\n'
 
 
     all_in_list = [sum_h_ugms,sum_plan,midl_h] + [i[0] for i in ugms_sum]
     [rf[i].append(counts) for i,counts in enumerate(all_in_list)]
 
 #print(sum([int(i) for i in rf[2]]), sep='\n\n\n')
+all_stations = []
+for stations in ugms_dict.values():
+    for  i in stations:
+        all_stations.append(i)
 
-table += f'|{"По РФ":18}|{sum(rf[0]):^8}|{round(sum(rf[0])/(len_month*2) * 100,2):^10}|{(sum([int(i) for i in rf[2]])//len(rf[2])):^12}|{sum(rf[3]):^9}|{sum(rf[4]):^9}|{sum(rf[5]):^8}|{sum(rf[6]):^8}|{sum(rf[7]):^7}|{sum(rf[8]):^6}|{sum(rf[9]):^15}|{sum(rf[10]):^3}|{sum(rf[11]):^3}|{sum(rf[12]):^3}|{sum(rf[13]):^3}|{sum(rf[14]):^4}|{sum(rf[15]):^8}|\n{top}\n'
-
+table += f'|{"По РФ":14} {len(all_stations):>3}|{sum(rf[0]):^8}|{round(sum(rf[0])/(len_month*2*len(all_stations)) * 100,2):^10}|{(sum([int(i) for i in rf[2]])//len(rf[2])):^12}|{sum(rf[3]):^9}|{sum(rf[4]):^9}|{sum(rf[5]):^8}|{sum(rf[6]):^8}|{sum(rf[7]):^7}|{sum(rf[8]):^6}|{sum(rf[9]):^15}|{sum(rf[10]):^3}|{sum(rf[11]):^3}|{sum(rf[12]):^3}|{sum(rf[13]):^3}|{sum(rf[14]):^4}|{sum(rf[15]):^8}|\n{top}\n'
 
 
 
