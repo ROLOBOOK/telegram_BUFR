@@ -42,6 +42,7 @@ def count_(index_date_dict):
             if reason_end not in list_tetm_2:
                 continue
             type_zonda = data_list[1].split()[0] if data_list[1].split()[0] != '090' else '03'
+            if type_zonda not in list_temp: continue
             ugms_with_sum[ugms][reason_end][type_zonda]+=1
 
 with open('/home/bufr/bufr_work/telegram_BUFR/for_work/name_ugms.txt', 'r') as f:
