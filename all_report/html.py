@@ -1,5 +1,11 @@
 from base_report import *
 from collections import Counter
+import sys, paramiko, os
+
+sys.path.insert(1, '../for_work')
+
+from ssh_webserver import server,name,password,port
+
 
 name_month = {1:'январь',2:'февраль',3:'март',4:'апрель',5:'май',6:'июнь',7:'июль',8:'август',9:'сентябрь',10:'октябрь',11:'ноябрь',12:'декабрь'}
 
@@ -50,7 +56,7 @@ xmlns:x="urn:schemas-microsoft-com:office:excel"
 xmlns="http://www.w3.org/TR/REC-html40">
 
 <head>
-<meta http-equiv=Content-Type content="text/html; charset=windows-1251">
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
 <meta name=ProgId content=Excel.Sheet>
 <meta name=Generator content="Microsoft Excel 14">
 <link rel=File-List href="repbufr2020_06.files/filelist.xml">
@@ -434,7 +440,7 @@ padding-right:1px;
 </head>
 
 <body>
-
+<a align="left" href="http://cao-ntcr.mipt.ru/monitor/monitorbufr.htm">Назад</a>
 <div id="сводная_шаблон_21853" align=center x:publishsource="Excel">
 
 <table border=0 cellpadding=0 cellspacing=0 width=1382 class=xl6821853
@@ -475,9 +481,11 @@ body = f'''
  <tr height=25 style='height:18.75pt'>
   <td colspan=17 height=25 class=xl6821853 style='height:18.75pt'>Сводная
   информация о функционировании аэрологической сети РФ, по данным телеграмм
-  BUFR за {name_month[month_now]} {year_now}г.</td>
+  BUFR за {name_month[month_now]} {year_now}г.,</td>
  </tr>
  <tr height=25 style='height:18.75pt'>
+ <td colspan=17 height=25 class=xl6821853 style='height:18.75pt' >сформирована на {now.strftime('%d.%m.%y')}</td>
+ </tr> <tr height=25 style='height:18.75pt'>
   <td height=25 class=xl6821853 style='height:18.75pt'></td>
   <td class=xl6821853></td>
   <td class=xl6821853></td>
@@ -825,3 +833,19 @@ html += ''' </tr>
 
 
 save_report(html, file_name='html',now=now,month_now=month_now)
+
+
+try:
+    ssh=paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(server,username=name,password=password, port=port)
+
+    ftp = ssh.open_sftp()
+    ftp.chdir('/home/monitor/www/monitor/2020')
+    folder_month_now = f'{month_now:02}'
+    if folder_month_now not in ftp.listdir():
+        ftp.mkdir(folder_month_now)
+    ftp.chdir(folder_month_now)
+    ftp.put(f'/home/bufr/reports/report_{month_now:02d}{now.year}/{now.year}{now.month:02d}.html',f'{now.year}{now.month:02d}.html')
+except:
+    pass

@@ -1,10 +1,9 @@
 from pybufrkit.renderer import FlatTextRenderer, NestedTextRenderer
 from pybufrkit.dataquery import NodePathParser, DataQuerent
 from pybufrkit.decoder import Decoder
-import os,time,re, logging, datetime, MySQLdb, paramiko
+import sys,os,time,re, logging, datetime, MySQLdb
 from progress.bar import IncrementalBar
-from datetime import date, timedelta
-from for_work.ssh_connect import server,name,password,port
+from datetime import date, timedelta, datetime
 from  collections import Counter
 
 def del_duble(set_):
@@ -19,22 +18,22 @@ def del_duble(set_):
     return set_
 
 
-def get_list_file(ftp, days=2):
+def get_list_file(days=2):
     # получаем вчерашню дату
     yesterday = date.today() - timedelta(days=days)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
-#    print(yesterday.strftime('%Y.%m.%d'))
     files = []
-    if year in ftp.listdir():
-        ftp.chdir(year)
-        if month in ftp.listdir():
-            ftp.chdir(month)
-            if day in ftp.listdir():
-                ftp.chdir(day)
-                if '0000' in ftp.listdir():
-                    files.extend([f'./0000/{file}' for file in ftp.listdir('0000') if file.endswith('bin')])
-                if '1200' in ftp.listdir():
-                    files.extend([f'./1200/{file}' for file in ftp.listdir('1200') if file.endswith('bin')])
+    os.chdir('/home/bufr/aero_bufr/res2')
+    if year in os.listdir():
+        os.chdir(year)
+        if month in os.listdir():
+            os.chdir(month)
+            if day in os.listdir():
+                os.chdir(day)
+                if '0000' in os.listdir():
+                    files.extend([f'./0000/{file}' for file in os.listdir('0000') if file.endswith('bin')])
+                if '1200' in os.listdir():
+                    files.extend([f'./1200/{file}' for file in os.listdir('1200') if file.endswith('bin')])
 
     return files
 
@@ -105,13 +104,13 @@ def set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd):
             descriptor_035035, text_info_ValueData_205060)
            VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
         conn.commit()
-#        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
+        bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
-#            bar.next()
+            bar.next()
             cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.content_telegram (Stations_numberStation, date, time, P, T, Td, H, D, V, dLat, dLon, Flags)
                                       VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''',lines)
             conn.commit()
-#        bar.finish()
+        bar.finish()
         cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.last_H (Stations_numberStation, time_srok, H) VALUES (%s,%s,%s)''', last_H_in_bd)
         conn.commit()
     except:
@@ -174,32 +173,24 @@ def get_index_srok_from_bd():
     return result
 
 
-def main(days=1):
-
-    # подключаемся к серверу с телеграммами
-    ssh=paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy()) #избежать проблем с клчючем шифрования
-    #ssh.set_missing_host_key_policy(paramiko.RejectPolicy())
-    ssh.connect(server,username=name,password=password, port=port)
-#    print(f'connect to server {server}')
-    ftp = ssh.open_sftp()
-
-    files = get_list_file(ftp, days=days)
+def main(days=1, doubl=0):
+    dubl_bufr = {}
+    files = get_list_file(days=days)
     if not files:
-#        print('Не получены файлы для проверки')
+        print('Не получены файлы для проверки')
         exit()
     meta_in_bd = set()
     tele_in_bd = set()
     last_H_in_bd = set()
     info_srok_in_bd = get_index_srok_from_bd()
-#    bar = IncrementalBar('decode_bufr', max = len(files))
+    bar = IncrementalBar('decode_bufr', max = len(files))
 
     for file_name in files:
-#        bar.next()
+        bar.next()
 
         try:
             decoder = Decoder()
-            with ftp.open(file_name, 'rb') as ins: #
+            with open(file_name, 'rb') as ins: #
                 bufr_message = decoder.process(ins.read())
             # декодируем телеграмму в текстовый файл
             text_bufr = NestedTextRenderer().render(bufr_message)
@@ -255,6 +246,10 @@ def main(days=1):
                      meta_in_bd.add(meta_info)
 
                 index_station = meta_info[0]
+
+                if meta_inf not in dubl_bufr: dubl_bufr[meta_inf]=set()
+                dubl_bufr[meta_inf].add(file_name)
+
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
                 if  telemetry_info:
                     last_H = (telemetry_info[-1][0],telemetry_info[-1][1], get_last_h(telemetry_info))
@@ -265,15 +260,80 @@ def main(days=1):
 
 
 
-#    bar.finish()
+    bar.finish()
 #удаляем дубли образованые первой и второй частью телеграмм
     meta_in_bd = del_duble(meta_in_bd)
-
+    if doubl:
+        return dubl_bufr
     set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
 
 if __name__ == '__main__':
+    if len(sys.argv) == 2 and sys.argv[1].isdigit():
+        day_ago = sys.argv[1]
+        y = int(day_ago[:4])
+        m = int(day_ago[4:6])
+        d = int(day_ago[6:8])
+        day_chek = datetime(y,m,d)
+        sterday = datetime.now() - day_chek
+        datenow = day_chek.strftime('%Y.%m.%d')
+        answer = input(f'Начать проверку за {datenow}(y/n):')
+        if answer in ('y','yes','да','д','ok'):
+            print('start')
+            begin = time.time()
+            main(days=sterday.days)
+            t = time.time()-begin
+            print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+        else:
+            print('введенно не првапильное число или вы отказались от проверки')
+    elif len(sys.argv) == 3 and sys.argv[1].isdigit():
+        d1 = sys.argv[1]
+        d2 = sys.argv[2]
+        date1 = datetime(int(d1[:4]), int(d1[4:6]), int(d1[6:8]))
+        if d2 == 'doubl':
+            sterday = datetime.now() - date1
+            datenow = date1.strftime('%Y.%m.%d')
+            answer = input(f'Начать проверку дублей за {datenow}(y/n):')
+            if answer not in ('y','yes','да','д','ok'):
+                print('введенно не првапильное число или вы отказались от проверки')
+                exit()
+            print('start')
+            begin = time.time()
+            dubl_bufr = main(days=sterday.days, doubl=1)
+            r = 'Проверка дублей\n'
+            for  kye,valum in dubl_bufr.items():
+                if len(valum) > 1:
+                    s = ','.join([i.split('/')[-1] for i in valum])
+                else:
+                    continue
+                r += f'станция, срок {kye}; количество повторов -  {len(valum)}, в файлаx: {s}\n\n'
+            t = time.time()-begin
+            os.chdir('/home/bufr/bufr_work/telegram_BUFR')
+            with open(f'DOUBL',"a") as f:
+                f.write(r)
+                print(f'файл DOUBL - создан')
+            print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+            exit()
+        if  not sys.argv[2].isdigit():
+            print('Не верно введена дата окончания проверки')
+            exit()
+        date2 = datetime(int(d2[:4]), int(d2[4:6]), int(d2[6:8]))
+        num1 = datetime.now() - date1
+        num2 = datetime.now() - date2
+        dat1 = date1.strftime('%Y.%m.%d')
+        dat2 = date2.strftime('%Y.%m.%d')
+        answer = input(f'Начать проверку за {dat1}-{dat2}(y/n):')
+        if answer in ('y','yes','да','д','ok'):
+            for i in range(num2.days,num1.days+1):
+                main(days=i)
 
-    main()
+    else:
+        begin = time.time()
+        print(f'Проверка за вчерашнй день')
+        main(days=1)
+        t = time.time()-begin
+        print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
+
+
 
 
 

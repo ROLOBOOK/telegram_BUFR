@@ -10,7 +10,7 @@
 Мурманское Murm_ugms
 Обь-Иртышское OIrt_ugms
 Приморское PMor_ugms
-респ.Татарстан Kaz_ugms
+Респ.Татарстан Kaz_ugms
 Сахалинское Sahl_ugms
 Северное Sevr_ugms
 Северо-Западное SZap_ugms
