@@ -4,7 +4,8 @@ from pybufrkit.decoder import Decoder
 import sys,os,time,re, logging, datetime, MySQLdb
 from progress.bar import IncrementalBar
 from datetime import date, timedelta, datetime
-from  collections import Counter
+from collections import Counter
+from for_work.email import send_email
 
 def del_duble(set_):
     double = [i for i in Counter([i[:2] for i in set_]).items() if i[1] > 1]
@@ -266,6 +267,8 @@ def main(days=1, doubl=0):
     if doubl:
         return dubl_bufr
     set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
+    return len(meta_in_bd)
+
 
 if __name__ == '__main__':
     if len(sys.argv) == 2 and sys.argv[1].isdigit():
@@ -329,10 +332,11 @@ if __name__ == '__main__':
     else:
         begin = time.time()
         print(f'Проверка за вчерашнй день')
-        main(days=1)
+        count_bufr =  main(days=1)
         t = time.time()-begin
         print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-
+        yesterday = date.today() - timedelta(days=1)
+        send_email(subject=f'В базу занесено  {count_bufr}, {yesterday.strftime("%d:%m:%Y")}.') 
 
 
 
