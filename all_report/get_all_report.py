@@ -1,4 +1,6 @@
 import os,sys
+sys.path.insert(1, '../')
+from for_work.email import send_email
 
 
 
@@ -9,3 +11,6 @@ if len(sys.argv) == 2:
     one_arg = sys.argv[1]
 for script in scripts_in_folder:
     os.system(f'python3 {script} {one_arg}')
+
+
+send_email(subject="Все отчеты обновлены")

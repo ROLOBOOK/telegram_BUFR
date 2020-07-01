@@ -172,6 +172,7 @@ SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
 
 
+alter table content_telegram add unique index index_time_P_T (Stations_numberStation, date, P, T);
 
 -- -----------------------------------------------------
 
@@ -187,6 +188,8 @@ CREATE TABLE IF NOT EXISTS `cao_bufr_v2`.`last_H` (
   PRIMARY KEY (`id`))
 ENGINE = InnoDB;
 
+
+alter table last_H add unique index index_time_H (Stations_numberStation, time_srok, H);
 
 -- -----------------------------------------------------
 
