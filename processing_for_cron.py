@@ -268,7 +268,7 @@ def main(days=1, doubl=0, solo_file=0):
 #удаляем дубли образованые первой и второй частью телеграмм
     meta_in_bd = del_duble(meta_in_bd)
     if doubl:
-        return dubl_bufr
+        return dubl_bufr, meta_in_bd,tele_in_bd,last_H_in_bd
 
     if solo_file: #для теста отдельных файлов
         return meta_in_bd
@@ -295,7 +295,9 @@ if __name__ == '__main__':
         YYYYMMDD YYYYMMDD gui  - будет проведен анализ телеграмм за указаный период без подтверждения\n
         help - будет распечатана справка по ключам\n
         ''')
-    
+    elif len(sys.argv) == 2 and sys.argv[1] == 'gui':
+        main(days=1)
+
     elif len(sys.argv) == 2 and sys.argv[1].isdigit() and len(sys.argv[1])==8:
         day_ago = sys.argv[1]
         y,m,d = int(day_ago[:4]),int(day_ago[4:6]), int(day_ago[6:8])
@@ -407,81 +409,6 @@ if __name__ == '__main__':
 
 
 
-
-exit()
-
-if __name__ == '__main__':
-    if (len(sys.argv) == 2 and sys.argv[1].isdigit()) or (len(sys.argv) == 3 and sys.argv[1].isdigit()):
-        day_ago = sys.argv[1]
-        y,m,d = int(day_ago[:4]),int(day_ago[4:6]), int(day_ago[6:8])
-        day_chek = datetime(y,m,d)
-        sterday = datetime.now() - day_chek
-        datenow = day_chek.strftime('%Y.%m.%d')
-        if sys.argv[-1] == 'gui':
-            main(days=sterday.days)
-        else:
-            answer = input(f'Начать проверку за {datenow}(y/n):')
-            if answer in ('y','yes','да','д','ok'):
-                print('start')
-                begin = time.time()
-                main(days=sterday.days)
-                t = time.time()-begin
-                print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-            else:
-                print('введенно не првапильное число или вы отказались от проверки')
-    elif len(sys.argv) == 4 and sys.argv[1].isdigit():
-        d1 = sys.argv[1]
-        d2 = sys.argv[2]
-        date1 = datetime(int(d1[:4]), int(d1[4:6]), int(d1[6:8]))
-        if d2 == 'doubl':
-            sterday = datetime.now() - date1
-            datenow = date1.strftime('%Y.%m.%d')
-            answer = input(f'Начать проверку дублей за {datenow}(y/n):')
-            if answer not in ('y','yes','да','д','ok'):
-                print('введенно не првапильное число или вы отказались от проверки')
-                exit()
-            print('start')
-            begin = time.time()
-            dubl_bufr = main(days=sterday.days, doubl=1)
-            r = 'Проверка дублей\n'
-            for  kye,valum in dubl_bufr.items():
-                if len(valum) > 1:
-                    s = ','.join([i.split('/')[-1] for i in valum])
-                else:
-                    continue
-                r += f'станция, срок {kye}; количество повторов -  {len(valum)}, в файлаx: {s}\n\n'
-            t = time.time()-begin
-            os.chdir('/home/bufr/bufr_work/telegram_BUFR')
-            with open(f'DOUBL',"a") as f:
-                f.write(r)
-                print(f'файл DOUBL - создан')
-            print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-            exit()
-        if  not sys.argv[2].isdigit():
-            print('Не верно введена дата окончания проверки')
-            exit()
-        date2 = datetime(int(d2[:4]), int(d2[4:6]), int(d2[6:8]))
-        num1 = datetime.now() - date1
-        num2 = datetime.now() - date2
-        dat1 = date1.strftime('%Y.%m.%d')
-        dat2 = date2.strftime('%Y.%m.%d')
-        if sys.argv[3] == 'gui':
-            for i in range(num2.days,num1.days+1):
-                main(days=i)
-            exit()
-        answer = input(f'Начать проверку за {dat1}-{dat2}(y/n):')
-        if answer in ('y','yes','да','д','ok'):
-            for i in range(num2.days,num1.days+1):
-                main(days=i)
-
-    else:
-        begin = time.time()
-        print(f'Проверка за вчерашнй день')
-        count_bufr =  main(days=1)
-        t = time.time()-begin
-        print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
-        yesterday = date.today() - timedelta(days=1)
-        send_email(subject=f'В базу занесено  {count_bufr}, {yesterday.strftime("%d:%m:%Y")}.') 
 
 
 
