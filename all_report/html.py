@@ -22,8 +22,23 @@ def get_data_from_bd(table='releaseZonde', columns='Stations_numberStation', cri
 count_pusk_month = get_data_from_bd(columns='Stations_numberStation, count(Stations_numberStation)',
                                     criterion=f'where month(time_srok)={month_now} group by Stations_numberStation')
 
-avg_H_month = get_data_from_bd(columns='Stations_numberStation,avg(H)', table='last_H',
-                             criterion=f'where  h!="-" and month(time_srok)={month_now} group by Stations_numberStation')
+avg_H_month = get_data_from_bd(columns='*', table='last_H',
+                             criterion=f'where  h!="-" and month(time_srok)={month_now}')
+s = {f'{i[0]};{i[1].strftime("%Y:%m:%d")}':int(i[-1]) for i in avg_H_month}
+for value in avg_H_month:
+    if int(value[-1]) > s[f'{value[0]};{value[1].strftime("%Y:%m:%d")}']:
+	    s[f'{value[0]};{value[1].strftime("%Y:%m:%d")}'] = int(value[-1])
+
+list_h_stations = [(i.split(';')[0],s[i]) for i in s]
+
+dict_h = {v:[] for v in set([i[0] for i in list_h_stations])}
+
+[dict_h[i[0]].append(i[1]) for i in list_h_stations]
+
+avg_H_month = [(i,sum(dict_h[i])/len(dict_h[i])) for i in dict_h]
+
+
+
 
 
 count_type_zonde_month =get_data_from_bd(columns='Stations_numberStation, oborudovanie',
@@ -437,10 +452,12 @@ padding-right:1px;
 	white-space:normal;}
 -->
 </style>
-</head>
+</head>'''
 
-<body>
-<a align="left" href="http://cao-ntcr.mipt.ru/monitor/monitorbufr.htm">Назад</a>
+body = f'''<body>
+<a href=../../{year_now}/{month_now-1:02}/{year_now}{month_now-1:02}.html>Предыдущий месяц</a>&nbsp;|&nbsp;<a href=../../{year_now}/{month_now+1:02}/{year_now}{month_now+1:02}.html>Следующий месяц</a>&nbsp;|&nbsp;<a href="http://cao-ntcr.mipt.ru/monitor/monitorbufr.htm">На верхний уровень</a>
+<hr>
+
 <div id="сводная_шаблон_21853" align=center x:publishsource="Excel">
 
 <table border=0 cellpadding=0 cellspacing=0 width=1382 class=xl6821853
@@ -475,9 +492,6 @@ padding-right:1px;
   <td class=xl6821853 width=64 style='width:48pt'></td>
   <td class=xl6821853 width=64 style='width:48pt'></td>
  </tr>
-'''
-
-body = f'''
  <tr height=25 style='height:18.75pt'>
   <td colspan=17 height=25 class=xl6821853 style='height:18.75pt'>Сводная
   информация о функционировании аэрологической сети РФ, по данным телеграмм

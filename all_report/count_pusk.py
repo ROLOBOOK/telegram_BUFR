@@ -1,12 +1,6 @@
 from base_report import *
 
-
-
-
-
-# подключаемся к базе получаем список данных за сроки 00 и 12 
-
-data_month_00, data_month_12 = load_data_from_bd('time_srok', point='', decriptor='', month_now=4)
+data_month_00, data_month_12 = load_data_from_bd('time_srok', point='', decriptor='', month_now=month_now)
 
 # делаем два словаря индекс станции - список дней когда был выпуск
 [index_date_00_dict[index_day[0]].append(index_day[1].day) for index_day in data_month_00 if index_day[0] in index_name_dict]
@@ -42,4 +36,3 @@ table += f'По УГМС за месяц {sum_month}'
 
 
 save_report(table, file_name='bnill')
-
