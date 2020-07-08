@@ -3,4 +3,5 @@ __pycache__
 for_work/ssh_connect.py
 for_work/ssh_webserver.py
 start_script.log
-
+temp_check_files_get_index.txt
+*.save

@@ -94,7 +94,10 @@ def set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd):
     try:
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
-        cursor.executemany('''INSERT IGNORE INTO cao_bufr_v2.releaseZonde
+        bar = IncrementalBar('meta_in_bd', max = len(tele_in_bd))
+        for i in meta_in_bd:
+            bar.next()
+            cursor.execute('''INSERT IGNORE INTO cao_bufr_v2.releaseZonde
             (Stations_numberStation, time_srok, time_pusk, koordinat, oborudovanie, oblachnost, GEOPOTENTIAL_HEIGHT_CALCULATION_002191,
             SOFTWARE_IDENTIFICATION_AND_VERSION_NUMBER_025061, RADIOSONDE_SERIAL_NUMBER_001081,
             CORRECTION_ALGORITHMS_FOR_HUMIDITY_MEASUREMENTS_002017, RADIOSONDE_OPERATING_FREQUENCY_002067,
@@ -103,8 +106,10 @@ def set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd):
             descriptor_002102, descriptor_025065, descriptor_026066, descriptor_002103, descriptor_002015, descriptor_002016,
             descriptor_002080, descriptor_002081, descriptor_002082, descriptor_002084, descriptor_002085, descriptor_002086,
             descriptor_035035, text_info_ValueData_205060)
-           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', meta_in_bd)
+           VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)''', i)
         conn.commit()
+        bar.finish()
+
         bar = IncrementalBar('in_bd_bufr', max = len(tele_in_bd))
         for lines in tele_in_bd:
             bar.next()
@@ -266,14 +271,20 @@ def main(days=1, doubl=0, solo_file=0):
 
     bar.finish()
 #удаляем дубли образованые первой и второй частью телеграмм
-    meta_in_bd = del_duble(meta_in_bd)
+    meta_in_bd_after_del_dubl = del_duble(meta_in_bd)
+    with open('/home/bufr/bufr_work/telegram_BUFR/temp_check_files_get_index.txt', 'w') as f:
+        res = '\n'.join(files)  + '\n' + '#'*50 + '\n'
+        res += ''.join([f"{i[0]} - {i[1]} \n" for i in meta_in_bd])
+        f.write(res)
+
+    set_in_bd(meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd)
+
     if doubl:
-        return dubl_bufr, meta_in_bd,tele_in_bd,last_H_in_bd
+        return dubl_bufr, meta_in_bd,meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd
 
     if solo_file: #для теста отдельных файлов
         return meta_in_bd
 
-    set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
     return len(meta_in_bd)
 
 

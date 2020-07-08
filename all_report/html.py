@@ -22,7 +22,7 @@ def get_data_from_bd(table='releaseZonde', columns='Stations_numberStation', cri
 count_pusk_month = get_data_from_bd(columns='Stations_numberStation, count(Stations_numberStation)',
                                     criterion=f'where month(time_srok)={month_now} group by Stations_numberStation')
 
-avg_H_month = get_data_from_bd(columns='*', table='last_H',
+avg_H_month = get_data_from_bd(columns='Stations_numberStation, time_srok, H', table='last_H',
                              criterion=f'where  h!="-" and month(time_srok)={month_now}')
 s = {f'{i[0]};{i[1].strftime("%Y:%m:%d")}':int(i[-1]) for i in avg_H_month}
 for value in avg_H_month:
