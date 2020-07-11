@@ -179,10 +179,12 @@ def get_index_srok_from_bd():
     return result
 
 
-def main(days=1, doubl=0, solo_file=0):
+def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
     dubl_bufr = {}
     files = get_list_file(days=days)
-
+    if find_file:
+        path = os.getcwd()
+        list_file = {find_file:[],'path':path}
     if solo_file:
         files = [solo_file]
     if not files:
@@ -193,6 +195,8 @@ def main(days=1, doubl=0, solo_file=0):
     last_H_in_bd = set()
     info_srok_in_bd = get_index_srok_from_bd()
     bar = IncrementalBar('decode_bufr', max = len(files)) 
+
+    temp_check_files_get_index = {file:[] for file in files}
 
     for file_name in files:
         bar.next()
@@ -258,6 +262,7 @@ def main(days=1, doubl=0, solo_file=0):
 
                 if meta_inf not in dubl_bufr: dubl_bufr[meta_inf]=set()
                 dubl_bufr[meta_inf].add(file_name)
+                temp_check_files_get_index[file_name].append(f'{meta_info[0]} - {meta_info[1]}')
 
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
                 if  telemetry_info:
@@ -265,7 +270,8 @@ def main(days=1, doubl=0, solo_file=0):
                     if last_H not in last_H_in_bd:
                         tele_in_bd.add(tuple(telemetry_info))
                         last_H_in_bd.add(last_H)
-
+                if find_file == meta_info[0]:
+                    list_file[find_file].append(file_name)
 
 
 
@@ -273,14 +279,21 @@ def main(days=1, doubl=0, solo_file=0):
 #удаляем дубли образованые первой и второй частью телеграмм
     meta_in_bd_after_del_dubl = del_duble(meta_in_bd)
     with open('/home/bufr/bufr_work/telegram_BUFR/temp_check_files_get_index.txt', 'w') as f:
-        res = '\n'.join(files)  + '\n' + '#'*50 + '\n'
+#        res = '\n'.join(files)  + '\n' + '#'*50 + '\n'
+        res = ''
+        for file in files:
+            res += f'{file}: {", ".join(temp_check_files_get_index[file][:5])}\n'
+        res = res + '#'*50 + '\n'
         res += ''.join([f"{i[0]} - {i[1]} \n" for i in meta_in_bd])
         f.write(res)
+    if add_in_bd:
+        set_in_bd(meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd)
 
-    set_in_bd(meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd)
+    if find_file:
+        return list_file
 
     if doubl:
-        return dubl_bufr, meta_in_bd,meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd
+        return  temp_check_files_get_index #dubl_bufr, meta_in_bd,meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd
 
     if solo_file: #для теста отдельных файлов
         return meta_in_bd
@@ -296,7 +309,7 @@ if __name__ == '__main__':
         t = time.time()-begin
         print('Проверка закончена за {:02d}:{:02d}:{:02d}'.format(int(t//3600%24), int(t//60%60), int(t%60)))
         yesterday = date.today() - timedelta(days=1)
-        send_email(subject=f'В базу занесено  {count_bufr}, {yesterday.strftime("%d:%m:%Y")}.')
+#        send_email(subject=f'В базу занесено  {count_bufr}, {yesterday.strftime("%d:%m:%Y")}.')
     elif len(sys.argv) == 2 and sys.argv[1] == 'help':
         print('''Возможные аргументы:\n
         YYYYMMDD - будет проведен анализ телеграмм за указаный день\n

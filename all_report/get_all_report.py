@@ -12,7 +12,7 @@ one_arg = ''
 if len(sys.argv) == 2:
     one_arg = sys.argv[1]
 for script in scripts_in_folder:
-    os.system(f'python3 {script} {one_arg}')
+#    os.system(f'python3 {script} {one_arg}')
     errors = subprocess.Popen(['python3', script],stderr=subprocess.PIPE)
     output_er = errors.stderr.read()
     err.append(f'{script}: {output_er if len(output_er) > 1 else "OK"}')

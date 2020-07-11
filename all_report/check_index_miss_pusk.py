@@ -27,17 +27,21 @@ def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZon
          from_bd_metainfo_now_00 = ''
      finally:
          conn.close()
-     return from_bd_metainfo_yesterday_12.union(from_bd_metainfo_now_00) 
+     return from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00
 
 if __name__ == '__main__':
     str_list_station_RF,index_name = get_str_list_station_RF()
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1) 
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
 
-    from_bd_metainfo = get_meta_info_for_srock(str_list_station_RF,year,month,day)
+    from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day)
 
-    from_bd_last_h = get_meta_info_for_srock(str_list_station_RF,year,month,day, table='last_H')
+    from_bd_metainfo = from_bd_metainfo_yesterday_12.union(from_bd_metainfo_now_00)
 
+
+
+    from_bd_last_h_yesterday_12,from_bd_last_h_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day, table='last_H')
+    from_bd_last_h =  from_bd_last_h_yesterday_12.union(from_bd_last_h_now_00)
 
     filename = '/home/bufr/bufr_work/telegram_BUFR/temp_check_files_get_index.txt' 
     if os.path.isfile(filename):
@@ -54,10 +58,18 @@ if __name__ == '__main__':
 
 
     res_last_h = '\n'.join(must_to_be_bd - from_bd_last_h)
+    str_srok12 = f'{ yesterday.strftime("%d.%m.%Y")} 12:00'
+    str_srok00 =  f'{int(day)+1:02}.{month}.{year} 00:00'
+    telegramma_not_get_dict = {str_srok12:[], str_srok00:[]}
+    srok_12 = [index.split(' - ')[0] for index in from_bd_metainfo_yesterday_12]
+    srok_00 = [index.split(' - ')[0] for index in from_bd_metainfo_now_00]
+
+    [telegramma_not_get_dict[str_srok12].append(index) for index in  telegramma_not_get if index not in srok_12]
+    [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get if index not in srok_00]
 
 
     res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
-    res += f'\nтелеграммы получены со станций:\n{", ".join(telegramma_get)}\n\nтелеграммы НЕ получены со станций:\n{", ".join(telegramma_not_get)}'
+    res += f'\nBUFR получены со станций:\n{", ".join(telegramma_get)}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{", ".join(telegramma_not_get_dict[str_srok12])}\n\nСрок {str_srok00}\n{", ".join(telegramma_not_get_dict[str_srok00])}'
 
     print(res)
     send_email(body=res, subject='в базе нет данных от станций', file='send')
