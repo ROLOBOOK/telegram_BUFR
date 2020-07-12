@@ -59,6 +59,28 @@ dict_ = {i[0]:[i[1],round(i[1] / (len_month*2) * 100,2)] for i in  count_pusk_mo
 [dict_[i].append(counter_end[i]) for i in dict_]
 
 
+# для СНГ
+
+#считаем количество типов радиозондов
+count_type_zonds_cng = {i:[] for i in index_name_cng}
+[count_type_zonds_cng[i[0]].append(i[1][:3]) for i in count_type_zonde_month if i[0] in count_type_zonds_cng]
+counter_type = {i:Counter(count_type_zonds_cng[i]) for i in count_type_zonds_cng if count_type_zonds_cng[i]}
+
+#
+count_end_pusk_cng = {i:[] for i in index_name_cng}
+[count_end_pusk_cng[i[0]].append(i[1]) for i in count_end_month if i[0] in count_end_pusk_cng]
+counter_end_cng = {i:Counter(count_end_pusk_cng[i]) for i in count_end_pusk_cng if count_end_pusk_cng[i]}
+
+#добавляем количество зондов и процент
+dict_cng = {i[0]:[i[1],round(i[1] / (len_month*2) * 100,2)] for i in  count_pusk_month if i[0] in index_name_cng}
+#добавляем  среднюю высоту
+[dict_cng[i[0]].append(int(i[1])) for i in avg_H_month if i[0] in index_name_cng]
+#добавляем количество типов выпущеных зондов
+[dict_cng[i].append(counter_type[i]) for i in dict_cng]
+#добавляем  количесвто присины окончания
+[dict_cng[i].append(counter_end_cng[i]) for i in dict_cng]
+
+
 if __name__ =='__main__':
     columns_name3 = f'|{" "*len("Станции/Управления")}| кол-во | %, плана |{"м":^12}| МРЗ-3АК | МРЗ-3МК | МРЗ-Н1 | АК2-2м | РЗМ-2| И-2012|"Ошибочный код"|"1"|"6"|"7"|"8"|"14"|"прочее"|'
     top = f'+{"-"*(len(columns_name3)-2)}+'
@@ -111,8 +133,39 @@ if __name__ =='__main__':
 
     table += f'|{"По РФ":14} {len(all_stations):>3}|{sum(rf[0]):^8}|{round(sum(rf[0])/(len_month*2*len(all_stations)) * 100,2):^10}|{(sum([int(i) for i in rf[2]])//len(rf[2])):^12}|{sum(rf[3]):^9}|{sum(rf[4]):^9}|{sum(rf[5]):^8}|{sum(rf[6]):^8}|{sum(rf[7]):^7}|{sum(rf[8]):^6}|{sum(rf[9]):^15}|{sum(rf[10]):^3}|{sum(rf[11]):^3}|{sum(rf[12]):^3}|{sum(rf[13]):^3}|{sum(rf[14]):^4}|{sum(rf[15]):^8}|\n{top}\n'
 
+# для СНГ
 
+    for ugms,stations in sorted(ugm_cng.items()):
+        ugms_sum = [[],[],[],[],[],[],[],[],[],[],[],[],[]]
+        for index in sorted(stations,key=lambda x:index_name_cng[x]):
+            if index in dict_cng:
+                mp3_pak = dict_cng[index][3].pop('058',0) + dict_cng[index][3].pop('089',0)
+                mp3_3mk = dict_cng[index][3].pop('162',0)
+                mp3_h1 = dict_cng[index][3].pop('119',0)
+                ak2_2m = dict_cng[index][3].pop('090',0)
+                p3m_2 = dict_cng[index][3].get('068',0) + dict_cng[index][3].pop('069',0)
+                u_2012 = dict_cng[index][3].get('153',0) + dict_cng[index][3].pop('160',0)
+                mistake_cod = sum(dict_cng[index][3].values())
+                one = dict_cng[index][4].pop('1',0)
+                six = dict_cng[index][4].pop('6',0)
+                seven = dict_cng[index][4].pop('7',0)
+                eight = dict_cng[index][4].pop('8',0)
+                fortin = dict_cng[index][4].pop('14',0)
+                other = sum(dict_cng[index][4].values())
 
+                [ugms_sum[i].append(zond) for i,zond in enumerate((mp3_pak,mp3_3mk,mp3_h1,ak2_2m,p3m_2,u_2012,mistake_cod,one,six,seven,eight,fortin,other))]
+                table += f'|{index_name_cng[index]:18}|{str(dict_cng[index][0]):^8}|{str(dict_cng[index][1]):^10}|{str(dict_cng[index][2]):^12}|{mp3_pak:^9}|{mp3_3mk:^9}|{mp3_h1:^8}|{ak2_2m:^8}|{p3m_2:^7}|{u_2012:^6}|{mistake_cod:^15}|{one:^3}|{six:^3}|{seven:^3}|{eight:^3}|{fortin:^4}|{other:^8}|\n'
+
+            else:
+                table += f'|{index_name_cng[index]:18}|{0:^8}|{0:^10}|{0:^12}|{0:^9}|{0:^9}|{0:^8}|{0:^8}|{0:^7}|{0:^6}|{0:^15}|{0:^3}|{0:^3}|{0:^3}|{0:^3}|{0:^4}|{0:^8}|\n'
+
+        sum_h_ugms = sum([dict_cng[index][0] for index in stations if index in dict_cng])
+        sum_plan = round(sum_h_ugms/(len_month*2*len(stations)) * 100,2)
+        h =[dict_cng[index][2] for index in stations if index in dict_cng]
+        midl_h = str(sum(h)// len(h)) if len(h) else 0
+        table += f'|{ugms[:15]:16}{len(stations):>2}|{str(sum_h_ugms):^8}|{sum_plan:^10}|{midl_h:^12}|{sum(ugms_sum[0]):^9}|{sum(ugms_sum[1]):^9}|{sum(ugms_sum[2]):^8}|{sum(ugms_sum[3]):^8}|{sum(ugms_sum[4]):^7}|{sum(ugms_sum[5]):^6}|{sum(ugms_sum[6]):^15}|{sum(ugms_sum[7]):^3}|{sum(ugms_sum[8]):^3}|{sum(ugms_sum[9]):^3}|{sum(ugms_sum[10]):^3}|{sum(ugms_sum[11]):^4}|{sum(ugms_sum[12]):^8}|\n{top}\n'
+
+        all_in_list = [sum_h_ugms,sum_plan,midl_h] + [i[0] for i in ugms_sum if i]
 
 
     save_report(table, file_name='bstat',now=now,month_now=month_now)

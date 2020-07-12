@@ -29,6 +29,11 @@ def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZon
          conn.close()
      return from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00
 
+def get_miss_two_part_telegamm():
+    pass
+
+
+
 if __name__ == '__main__':
     str_list_station_RF,index_name = get_str_list_station_RF()
     yesterday = datetime.datetime.now() - datetime.timedelta(days=1) 

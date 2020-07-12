@@ -65,6 +65,28 @@ dict_ = {i[0]:[i[1],round(i[1] / (len_month*2) * 100,2)] for i in  count_pusk_mo
 #добавляем  количесвто присины окончания
 [dict_[i].append(counter_end[i]) for i in dict_]
 
+#для СНГ
+#считаем количество типов радиозондов
+count_type_zonds_cng = {i:[] for i in index_name_cng}
+[count_type_zonds_cng[i[0]].append(i[1][:3]) for i in count_type_zonde_month if i[0] in count_type_zonds_cng]
+counter_type = {i:Counter(count_type_zonds_cng[i]) for i in count_type_zonds_cng if count_type_zonds_cng[i]}
+
+#
+count_end_pusk_cng = {i:[] for i in index_name_cng}
+[count_end_pusk_cng[i[0]].append(i[1]) for i in count_end_month if i[0] in count_end_pusk_cng]
+counter_end_cng = {i:Counter(count_end_pusk_cng[i]) for i in count_end_pusk_cng if count_end_pusk_cng[i]}
+
+#добавляем количество зондов и процент
+dict_cng = {i[0]:[i[1],round(i[1] / (len_month*2) * 100,2)] for i in  count_pusk_month if i[0] in index_name_cng}
+#добавляем  среднюю высоту
+[dict_cng[i[0]].append(int(i[1])) for i in avg_H_month if i[0] in index_name_cng]
+#добавляем количество типов выпущеных зондов
+[dict_cng[i].append(counter_type[i]) for i in dict_cng]
+#добавляем  количесвто присины окончания
+[dict_cng[i].append(counter_end_cng[i]) for i in dict_cng]
+
+
+
 head = '''
 <html xmlns:o="urn:schemas-microsoft-com:office:office"
 xmlns:x="urn:schemas-microsoft-com:office:excel"
@@ -78,6 +100,25 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <style id="сводная_шаблон_21853_Styles">
 	{mso-displayed-decimal-separator:"\.";
 	mso-displayed-thousand-separator:" ";}
+.xl6621890
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:"Times New Roman", serif;
+	mso-font-charset:204;
+	mso-number-format:General;
+	text-align:center;
+	vertical-align:middle;
+	border:.5pt solid windowtext;
+	background:#FFA500;
+	mso-pattern:black none;
+	white-space:nowrap;}
 .xl6321853
 	{padding-top:1px;
 	padding-right:1px;
@@ -634,11 +675,60 @@ for stations in ugms_dict.values():
 
 list_rf_row = [sum(rf[0]),round(sum(rf[0])/(len_month*2*len(all_stations)) * 100,2),sum([int(i) for i in rf[2]])//len(rf[2]),sum(rf[3]),sum(rf[4]),sum(rf[5]),sum(rf[6]),sum(rf[7]),sum(rf[8]),sum(rf[9]),sum(rf[10]),sum(rf[11]),sum(rf[12]),sum(rf[13]),sum(rf[14]),sum(rf[15])]
 
-html += f'''<td height=25 class=xl6421853 style='height:18.75pt;border-top:none'>По
+html += f'''<td height=25 class=xl6621890 style='height:18.75pt;border-top:none'>По
   РФ<span style='mso-spacerun:yes'>          </span>{len(all_stations)}</td>'''
 
 for column in list_rf_row:
-    html += f'''<td class=xl6421853 style='border-top:none;border-left:none'>{column}</td>'''
+    html += f'''<td class=xl6621890 style='border-top:none;border-left:none'>{column}</td>'''
+
+# для СНГ
+
+for ugms,stations in sorted(ugm_cng.items()):
+    ugms_sum = [[],[],[],[],[],[],[],[],[],[],[],[],[]]
+    for index in sorted(stations,key=lambda x:index_name_cng[x]):
+        html += f'''
+ <tr height=25 style='height:18.75pt'>
+  <td height=25 class=xl6921853 style='height:18.75pt;border-top:none'>{index_name_cng[index]}<span
+  style='mso-spacerun:yes'>               </span></td>
+'''
+
+        if index in dict_cng:
+            mp3_pak = dict_cng[index][3].pop('058',0) + dict_cng[index][3].pop('089',0)
+            mp3_3mk = dict_cng[index][3].pop('162',0)
+            mp3_h1 = dict_cng[index][3].pop('119',0)
+            ak2_2m = dict_cng[index][3].pop('090',0)
+            p3m_2 = dict_cng[index][3].get('068',0) + dict_cng[index][3].pop('069',0)
+            u_2012 = dict_cng[index][3].get('153',0) + dict_cng[index][3].pop('160',0)
+            mistake_cod = sum(dict_cng[index][3].values())
+            one = dict_cng[index][4].pop('1',0)
+            six = dict_cng[index][4].pop('6',0)
+            seven = dict_cng[index][4].pop('7',0)
+            eight = dict_cng[index][4].pop('8',0)
+            fortin = dict_cng[index][4].pop('14',0)
+            other = sum(dict_cng[index][4].values())
+
+            list_one_row = [dict_cng[index][0],dict_cng[index][1],dict_cng[index][2],mp3_pak,mp3_3mk,mp3_h1,ak2_2m,p3m_2,u_2012,mistake_cod,one,six,seven,eight,fortin,other]
+
+            [ugms_sum[i].append(zond) for i,zond in enumerate((mp3_pak,mp3_3mk,mp3_h1,ak2_2m,p3m_2,u_2012,mistake_cod,one,six,seven,eight,fortin,other))]
+
+            for  column in list_one_row:
+                html += f"<td class=xl6421853 style='border-top:none;border-left:none'>{column}</td>"
+        else:
+            for _ in range(16):
+                html += f"<td class=xl6421853 style='border-top:none;border-left:none'>0</td>"
+        html += '</tr>'
+
+    sum_h_ugms = sum([dict_cng[index][0] for index in stations if index in dict_cng])
+    sum_plan = round(sum_h_ugms/(len_month*2*len(stations)) * 100,2)
+    h =[dict_cng[index][2] for index in stations if index in dict_cng]
+    midl_h = str(sum(h)// len(h)) if len(h) else 0
+    list_ugms_row = [sum_h_ugms,sum_plan,midl_h,sum(ugms_sum[0]),sum(ugms_sum[1]),sum(ugms_sum[2]),sum(ugms_sum[3]),sum(ugms_sum[4]),sum(ugms_sum[5]),sum(ugms_sum[6]),sum(ugms_sum[7]),sum(ugms_sum[8]),sum(ugms_sum[9]),sum(ugms_sum[10]),sum(ugms_sum[11]),sum(ugms_sum[12])]
+
+    html += f'''<tr height=25 style='height:18.75pt'>
+  <td height=25 class=xl6621853 style='height:18.75pt;border-top:none'>{ugms}/{len(stations)}</td>'''
+    for column in list_ugms_row:
+        html += f'''<td class=xl6621853 style='border-top:none;border-left:none'>{column}</td>'''
+    html += '</tr>'
 
 
 html += ''' </tr>

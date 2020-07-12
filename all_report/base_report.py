@@ -15,9 +15,24 @@ for i in rr:
     if len(i) == 3:
         ugms_dict[i[-1]].append(i[0])
 
-# делаем два словаря будем заносить данные из базы
+# делаем два словаря будем заносить данные п оРФ из базы
 index_date_00_dict = {i:[] for i in index_name_dict.keys()}
 index_date_12_dict = {i:[] for i in index_name_dict.keys()}
+
+
+
+# подготавливаем станции по снг
+with open('../for_work/index_CNG.txt') as f:
+    index_cng = [row for row in f.read().split('\n') if row]
+index_name_cng = {i.split()[0]:i.split()[1] for i in index_cng if i}
+ugm_cng = {ugms:[] for ugms in set([i.split()[-1] for i in index_cng])}
+for row in index_cng:
+    ugm_cng[row.split()[-1]].append(row.split()[0])
+
+
+# делаем два словаря будем заносить данные по СНГ из базы
+index_date_00_dict_cng = {i:[] for i in index_name_cng.keys()}
+index_date_12_dict_cng = {i:[] for i in index_name_cng.keys()}
 
 
  # получаем  текущую дату и количество дней в текущем месяце
@@ -37,7 +52,7 @@ if len(sys.argv) == 2 and sys.argv[1].isdigit():
 
 
 
-def work_with_dict(list_):
+def work_with_dict(list_, index_name_dict=index_name_dict):
 #'''записываем в словарь даные {индекс_cтанции: {день : данные}} '''
     index_date_dict = {i:{day:'' for day in range(1,month_now + 1)} for i in index_name_dict.keys()}
     list_ = [(i[0],i[1],int(i[2])) if i[2].isdigit() else (i[0],i[1],0) for i in list_]
