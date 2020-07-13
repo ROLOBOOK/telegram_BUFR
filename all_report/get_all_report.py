@@ -16,4 +16,6 @@ for script in scripts_in_folder:
     errors = subprocess.Popen(['python3', script],stderr=subprocess.PIPE)
     output_er = errors.stderr.read()
     err.append(f'{script}: {output_er if len(output_er) > 1 else "OK"}')
-send_email(body='\n\n'.join(err),subject="Все отчеты обновлены")
+s = [i for i in err if i.split()[-1] != "OK"]
+if s:
+    send_email(body='\n\n'.join(err),subject="Ошбика при обновлении отчетов!")
