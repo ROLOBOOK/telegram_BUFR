@@ -1,6 +1,8 @@
 import MySQLdb,re, datetime, sys, os
 sys.path.insert(1, '../')
 from for_work.email import send_email
+from collections import Counter
+
 
 def get_str_list_station_RF():
     with open('../for_work/index.txt') as f:
@@ -29,8 +31,33 @@ def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZon
          conn.close()
      return from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00
 
-def get_miss_two_part_telegamm():
-    pass
+def get_miss_two_part_telegamm(str_list_station_RF,year,month,day):
+    try:
+        last_night = f'{int(day)+1:02}'
+        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
+        cursor = conn.cursor()
+        cursor.execute(f'''select Stations_numberStation,time_srok,H from 
+cao_bufr_v2.last_H
+        where year(time_srok)={year} and month(time_srok)={month} and 
+day(time_srok)={day} and hour(time_srok)=12
+ and Stations_numberStation in ({str_list_station_RF})''')
+
+        two_part_count = list(cursor.fetchall())
+        cursor.execute(f'''select Stations_numberStation,time_srok,H from 
+cao_bufr_v2.last_H
+        where year(time_srok)={year} and month(time_srok)={month} and 
+day(time_srok)={last_night} and hour(time_srok)=00
+ and Stations_numberStation in ({str_list_station_RF})''')
+        two_part_count.extend(list(cursor.fetchall()))
+        count = Counter([i[:2] for i in two_part_count])
+        not_two_part_telegram = [i for i in count if count[i] == 1]
+        res = [telegram for telegram in two_part_count if telegram[:2] in not_two_part_telegram]
+        res =  [f"\n{i[0]} {i[1].strftime('%Y.%m.%d')} {i[-1]}" for i in res]
+    except:
+        res = 'ERROR GET INFO FROM BD'
+    finally:
+        conn.close()
+    return res
 
 
 
@@ -73,8 +100,12 @@ if __name__ == '__main__':
     [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get if index not in srok_00]
 
 
+    not_two_part_telegram = get_miss_two_part_telegamm(str_list_station_RF,year,month,day)
+
+
     res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
-    res += f'\nBUFR получены со станций:\n{", ".join(telegramma_get)}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{", ".join(telegramma_not_get_dict[str_srok12])}\n\nСрок {str_srok00}\n{", ".join(telegramma_not_get_dict[str_srok00])}'
+    res += f'\nBUFR получены со станций:\n{", ".join(telegramma_get)}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{", ".join(telegramma_not_get_dict[str_srok12])}\n\nСрок {str_srok00}\n{", ".join(telegramma_not_get_dict[str_srok00])}\n'
+    res += f'\nПолучена только одна часть телеграмм:\n{"".join(not_two_part_telegram)}'
 
     print(res)
     send_email(body=res, subject='в базе нет данных от станций', file='send')
