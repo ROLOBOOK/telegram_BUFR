@@ -52,7 +52,7 @@ day(time_srok)={last_night} and hour(time_srok)=00
         count = Counter([i[:2] for i in two_part_count])
         not_two_part_telegram = [i for i in count if count[i] == 1]
         res = [telegram for telegram in two_part_count if telegram[:2] in not_two_part_telegram]
-        res =  [f"\n{i[0]} {i[1].strftime('%Y.%m.%d')} {i[-1]}" for i in res]
+        res =  [f"Станция: {i[0]}; время выпуска: {i[1].strftime('%Y.%m.%d %H:%M')}; конечная высота: {i[-1]};\n" for i in sorted(res,key=lambda x: x[0])]
     except:
         res = 'ERROR GET INFO FROM BD'
     finally:
@@ -104,7 +104,7 @@ if __name__ == '__main__':
 
 
     res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
-    res += f'\nBUFR получены со станций:\n{", ".join(telegramma_get)}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{", ".join(telegramma_not_get_dict[str_srok12])}\n\nСрок {str_srok00}\n{", ".join(telegramma_not_get_dict[str_srok00])}\n'
+    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
     res += f'\nПолучена только одна часть телеграмм:\n{"".join(not_two_part_telegram)}'
 
     print(res)

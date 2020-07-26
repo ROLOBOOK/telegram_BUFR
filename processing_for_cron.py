@@ -6,6 +6,8 @@ from progress.bar import IncrementalBar
 from datetime import date, timedelta, datetime
 from collections import Counter
 from for_work.email import send_email
+from traceback import print_exc
+
 
 def del_duble(set_):
     double = [i for i in Counter([i[:2] for i in set_]).items() if i[1] > 1]
@@ -49,8 +51,16 @@ def get_metadate(file_name, data, time_srok):
     try:
         for_index = [parsing(i,data) for i in ('001001','001002')]
         index_station = '{:0>2}{:0>3}'.format(*for_index)
+        if index_station == '__0__' and '_' in file_name and len(file_name.split('_')[0]) != 14:
+            return 0
 
-        for_time_pusk = [int(parsing(i, data)) for i in ('004001', '004002', '004003', '004004','004005', '004006')]
+#        for_time_pusk = [int(parsing(i, data)) for i in ('004001', '004002', '004003', '004004','004005', '004006')]
+        for_time_pusk= []
+        for pat in ('004001', '004002', '004003', '004004','004005', '004006'):
+            res = parsing(pat, data)
+            if pat == '004006' and res == '__':
+                res = 0
+            for_time_pusk.append(res)
         time_pusk = '{:0>4}-{:0>2}-{:0>2} {:0>2}:{:0>2}:{:0>2}'.format(*for_time_pusk)
 
         for_koordinate = [parsing(i, data) for i in ('005001', '006001', '007030', '007031', '007007')]
@@ -72,8 +82,8 @@ def get_metadate(file_name, data, time_srok):
             text_info = parsing('205011', data)
 
         return (index_station, time_srok, time_pusk, koordinat, oborudovanie, oblachnost) + tuple(and_lost) + (text_info,)
-    except ValueError as ex:
-        logging(file_name, ex)
+    except Exception as ex:
+        print(ex)
         return 0
 
 def get_telemetria(index_station, date_srok, telegram):
