@@ -10,7 +10,7 @@ def get_str_list_station_RF():
     index_name = {i.split()[0]:i.split()[1:] for i in s.split('\n') if i}
     return ','.join(re.findall(r'\d{5}',s)), index_name 
 
-def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZonde'):
+def get_meta_info_for_srock(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year,table='releaseZonde'):
      try:
          conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
          cursor = conn.cursor()
@@ -18,9 +18,9 @@ def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZon
          where year(time_srok)={year} and month(time_srok)={month} and day(time_srok)={day} and hour(time_srok)=12
  and Stations_numberStation in ({str_list_station_RF})''')
          from_bd_metainfo_yesterday_12 = set([f'{index[0]} - {index[1]}' for index in cursor.fetchall() if index])
-         day = f'{int(day)+1:02}'
+
          cursor.execute(f'''select Stations_numberStation,time_srok from cao_bufr_v2.{table}
-         where year(time_srok)={year} and month(time_srok)={month} and day(time_srok)={day} and hour(time_srok)=0
+         where year(time_srok)={lastnight_year} and month(time_srok)={lastnight_month} and day(time_srok)={lastnight} and hour(time_srok)=0
  and Stations_numberStation in ({str_list_station_RF})''')
          from_bd_metainfo_now_00 = set([f'{index[0]} - {index[1]}' for index in cursor.fetchall() if index])
 
@@ -31,9 +31,8 @@ def get_meta_info_for_srock(str_list_station_RF,year,month,day,table='releaseZon
          conn.close()
      return from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00
 
-def get_miss_two_part_telegamm(str_list_station_RF,year,month,day):
+def get_miss_two_part_telegamm(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year):
     try:
-        last_night = f'{int(day)+1:02}'
         conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
         cursor = conn.cursor()
         cursor.execute(f'''select Stations_numberStation,time_srok,H from 
@@ -43,10 +42,10 @@ day(time_srok)={day} and hour(time_srok)=12
  and Stations_numberStation in ({str_list_station_RF})''')
 
         two_part_count = list(cursor.fetchall())
-        cursor.execute(f'''select Stations_numberStation,time_srok,H from 
+        cursor.execute(f'''select Stations_numberStation,time_srok,H from
 cao_bufr_v2.last_H
-        where year(time_srok)={year} and month(time_srok)={month} and 
-day(time_srok)={last_night} and hour(time_srok)=00
+        where year(time_srok)={lastnight_year} and month(time_srok)={lastnight_month} and 
+day(time_srok)={lastnight} and hour(time_srok)=00
  and Stations_numberStation in ({str_list_station_RF})''')
         two_part_count.extend(list(cursor.fetchall()))
         count = Counter([i[:2] for i in two_part_count])
@@ -63,16 +62,18 @@ day(time_srok)={last_night} and hour(time_srok)=00
 
 if __name__ == '__main__':
     str_list_station_RF,index_name = get_str_list_station_RF()
-    yesterday = datetime.datetime.now() - datetime.timedelta(days=1) 
+    now_day = datetime.datetime.now()
+    lastnight,lastnight_month,lastnight_year = now_day.strftime("%d.%m.%Y").split('.')
+    yesterday = now_day - datetime.timedelta(days=1)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
 
-    from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day)
+    from_bd_metainfo_yesterday_12, from_bd_metainfo_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year)
 
     from_bd_metainfo = from_bd_metainfo_yesterday_12.union(from_bd_metainfo_now_00)
 
 
 
-    from_bd_last_h_yesterday_12,from_bd_last_h_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day, table='last_H')
+    from_bd_last_h_yesterday_12,from_bd_last_h_now_00 = get_meta_info_for_srock(str_list_station_RF,year,month,day, lastnight, lastnight_month, lastnight_year, table='last_H')
     from_bd_last_h =  from_bd_last_h_yesterday_12.union(from_bd_last_h_now_00)
 
     filename = '/home/bufr/bufr_work/telegram_BUFR/temp_check_files_get_index.txt' 
@@ -91,7 +92,7 @@ if __name__ == '__main__':
 
     res_last_h = '\n'.join(must_to_be_bd - from_bd_last_h)
     str_srok12 = f'{ yesterday.strftime("%d.%m.%Y")} 12:00'
-    str_srok00 =  f'{int(day)+1:02}.{month}.{year} 00:00'
+    str_srok00 =  f'{lastnight}.{lastnight_month}.{lastnight_year} 00:00'
     telegramma_not_get_dict = {str_srok12:[], str_srok00:[]}
     srok_12 = [index.split(' - ')[0] for index in from_bd_metainfo_yesterday_12]
     srok_00 = [index.split(' - ')[0] for index in from_bd_metainfo_now_00]
@@ -100,7 +101,7 @@ if __name__ == '__main__':
     [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get if index not in srok_00]
 
 
-    not_two_part_telegram = get_miss_two_part_telegamm(str_list_station_RF,year,month,day)
+    not_two_part_telegram = get_miss_two_part_telegamm(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year)
 
 
     res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
