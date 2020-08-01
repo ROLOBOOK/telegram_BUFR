@@ -10,15 +10,15 @@ from traceback import print_exc
 
 
 def del_duble(set_):
-    double = [i for i in Counter([i[:2] for i in set_]).items() if i[1] > 1]
-    list_double = [i[0][0] for i in double]
+    double = [i for i in Counter([i[:3] for i in set_]).items() if i[1] > 1]
+    list_double = [i[0][:3] for i in double]
     list_for_del = set()
     for data in set_:
-        if  data[0] in list_double and data[-2] == '__':
+        if  data[:3] in list_double and data[-2] == '__':
             list_for_del.add(data)
     for i in list_for_del:
         set_.remove(i)
-    return set_
+
 
 
 def get_list_file(days=2):
@@ -189,8 +189,8 @@ def get_index_srok_from_bd():
     return result
 
 
-def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
-    dubl_bufr = {}
+def main(days=1, solo_file=0, add_in_bd=1, find_file=0):
+
     files = get_list_file(days=days)
     if find_file:
         path = os.getcwd()
@@ -203,7 +203,6 @@ def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
     meta_in_bd = set()
     tele_in_bd = set()
     last_H_in_bd = set()
-    info_srok_in_bd = get_index_srok_from_bd()
     bar = IncrementalBar('decode_bufr', max = len(files)) 
 
     temp_check_files_get_index = {file:[] for file in files}
@@ -237,8 +236,6 @@ def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
         pettern_split_some_telegram = r'###### subset \d{1,1000} of \d{1,1000} ######'
         list_telegrams_in_bufr = re.split(pettern_split_some_telegram, list_decod_bufr[4])
 
-        conn = MySQLdb.connect('localhost', 'fol', 'Qq123456', 'cao_bufr_v2', charset="utf8")
-        cursor = conn.cursor()
         # получаем данные из телеграмм
         for telegram in list_telegrams_in_bufr:
             meta_info = get_metadate(file_name, telegram, date_srok)
@@ -264,22 +261,20 @@ def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
                 meta_info = get_metadate(file_name, telegram, date_srok)
                 if not meta_info:
                     continue
-                meta_inf = f'{meta_info[0]}:{meta_info[1]}:[meta_info[2]'
-                if meta_inf not in info_srok_in_bd:
-                     meta_in_bd.add(meta_info)
 
-                index_station = meta_info[0]
-
-                if meta_inf not in dubl_bufr: dubl_bufr[meta_inf]=set()
-                dubl_bufr[meta_inf].add(file_name)
+                if '25042' in meta_info:
+                    print('\n',meta_info[:5], '\n', file_name, '\n')
+                meta_in_bd.add(meta_info)
                 temp_check_files_get_index[file_name].append(f'{meta_info[0]} - {meta_info[1]}')
 
+                index_station = meta_info[0]
                 telemetry_info = get_telemetria(index_station, date_srok, telegram)
                 if  telemetry_info:
                     last_H = (telemetry_info[-1][0],telemetry_info[-1][1], get_last_h(telemetry_info))
                     if last_H not in last_H_in_bd:
                         tele_in_bd.add(tuple(telemetry_info))
                         last_H_in_bd.add(last_H)
+                # для поиска файлов 
                 if find_file == meta_info[0]:
                     list_file[find_file].append(file_name)
 
@@ -287,7 +282,7 @@ def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
 
     bar.finish()
 #удаляем дубли образованые первой и второй частью телеграмм
-    meta_in_bd_after_del_dubl = del_duble(meta_in_bd)
+#    del_duble(meta_in_bd)
     with open('/home/bufr/bufr_work/telegram_BUFR/temp_check_files_get_index.txt', 'w') as f:
 #        res = '\n'.join(files)  + '\n' + '#'*50 + '\n'
         res = ''
@@ -297,18 +292,15 @@ def main(days=1, doubl=0, solo_file=0, add_in_bd=1, find_file=0):
         res += ''.join([f"{i[0]} - {i[1]} \n" for i in meta_in_bd])
         f.write(res)
     if add_in_bd:
-        set_in_bd(meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd)
+        set_in_bd(meta_in_bd, tele_in_bd,last_H_in_bd)
 
     if find_file:
         return list_file
 
-    if doubl:
-        return  temp_check_files_get_index #dubl_bufr, meta_in_bd,meta_in_bd_after_del_dubl, tele_in_bd,last_H_in_bd
-
     if solo_file: #для теста отдельных файлов
         return meta_in_bd
 
-    return len(meta_in_bd)
+    return meta_in_bd
 
 
 if __name__ == '__main__':
