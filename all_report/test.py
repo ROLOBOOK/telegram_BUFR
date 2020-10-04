@@ -59,10 +59,10 @@ day(time_srok)={lastnight} and hour(time_srok)=00
     return res
 
 
-
-if __name__ == '__main__':
+a = '__main__'
+if a == '__main__':
     str_list_station_RF,index_name = get_str_list_station_RF()
-    now_day = datetime.datetime.now()
+    now_day = datetime.datetime.now() - datetime.timedelta(days=1)
     lastnight,lastnight_month,lastnight_year = now_day.strftime("%d.%m.%Y").split('.')
     yesterday = now_day - datetime.timedelta(days=1)
     year, month, day = yesterday.strftime('%Y.%m.%d').split('.')
@@ -99,16 +99,14 @@ if __name__ == '__main__':
 
     [telegramma_not_get_dict[str_srok12].append(index) for index in  telegramma_not_get if index not in srok_12]
     [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get if index not in srok_00]
-    not_get_telegram_name_station_srok_12 = '; '.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok12] if index in index_name ])
-    not_get_telegram_name_station_srok_00 = '; '.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok00] if index in index_name ])
+    not_get_telegram_name_station_srok_12 = ';'.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok12] if index in index_name ])
+    not_get_telegram_name_station_srok_00 = ';'.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok00] if index in index_name ])
 
 
     not_two_part_telegram = get_miss_two_part_telegamm(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year)
 
     res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
-#    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{not_get_telegram_name_station_srok_00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
-    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12} - {str_srok00}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n\n'
+    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{not_get_telegram_name_station_srok_00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
     res += f'\nПолучена только одна часть телеграмм:\n{"".join(not_two_part_telegram)}'
 
     print(res)
-    send_email(body=res, subject='Отчет о выпусках за вчерашний день', file='send')

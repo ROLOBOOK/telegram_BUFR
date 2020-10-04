@@ -17,7 +17,8 @@ def make_row (number,index, index_date_dic):
         date = data_srok[0].strftime('%Y-%m-%d')
         srok = data_srok[0].strftime('%H')
         temp_kod_zonda = data_srok[1].split()[0]
-        kod_zonda = temp_kod_zonda if temp_kod_zonda != '090' else data_srok[2].split()[-1][1:]
+        kod_zonda = temp_kod_zonda if temp_kod_zonda != '090' else data_srok[2] #.split()[-1][1:]
+        kod_zonda = '30' if kod_zonda == None else kod_zonda.split()[-1][1:]
         reason_end = data_srok[-1]
         if reason_end not in list_tetm_2:
             continue
@@ -44,6 +45,8 @@ def count_(index_date_dict):
             type_zonda = data_list[1].split()[0] if data_list[1].split()[0] != '090' else '03'
             if type_zonda not in list_temp: continue
             ugms_with_sum[ugms][reason_end][type_zonda]+=1
+
+
 
 with open('/home/bufr/bufr_work/telegram_BUFR/for_work/name_ugms.txt', 'r') as f:
     text = f.read()

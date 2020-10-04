@@ -10,7 +10,7 @@ def work_with_dict_for_type_radio_zond(list_, index_name_dict=index_name_dict):
     for index_day_dicriptor in sorted(list_, key=lambda x: (x[0],x[2])):
         if index_date_dict.get(index_day_dicriptor[0],0):
             if index_day_dicriptor[2].startswith('090'):
-                index_date_dict[index_day_dicriptor[0]][index_day_dicriptor[1].day] = index_day_dicriptor[3][-4:]
+                index_date_dict[index_day_dicriptor[0]][index_day_dicriptor[1].day] = index_day_dicriptor[3][-4:] if index_day_dicriptor[3] else '-'
             else:
                 index_date_dict[index_day_dicriptor[0]][index_day_dicriptor[1].day] = index_day_dicriptor[2].split()[0]
     return index_date_dict
