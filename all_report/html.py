@@ -939,17 +939,21 @@ html += ''' </tr>
 save_report(html, file_name='html',now=now,month_now=month_now)
 
 
-try:
-    ssh=paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect(server,username=name,password=password, port=port)
 
-    ftp = ssh.open_sftp()
-    ftp.chdir('/home/monitor/www/monitor/2020')
-    folder_month_now = f'{month_now:02}'
-    if folder_month_now not in ftp.listdir():
-        ftp.mkdir(folder_month_now)
-    ftp.chdir(folder_month_now)
-    ftp.put(f'/home/bufr/reports/report_{month_now:02d}{now.year}/{now.year}{now.month:02d}.html',f'{now.year}{now.month:02d}.html')
+ssh=paramiko.SSHClient()
+ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+ssh.connect(server,username=name,password=password, port=port)
+
+ftp = ssh.open_sftp()
+try:
+    folder_year_now = f'{now.year:4}'
+    ftp.chdir(f'/home/monitor/www/monitor/{folder_year_now}')
 except:
-    pass
+    ftp.mkdir(f'/home/monitor/www/monitor/{folder_year_now}')
+    ftp.chdir(f'/home/monitor/www/monitor/{folder_year_now}')
+
+folder_month_now = f'{month_now:02}'
+if folder_month_now not in ftp.listdir():
+    ftp.mkdir(folder_month_now)
+ftp.chdir(folder_month_now)
+ftp.put(f'/home/bufr/reports/report_{month_now:02d}{now.year}/{now.year}{now.month:02d}.html',f'{now.year}{now.month:02d}.html')

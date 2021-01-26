@@ -83,11 +83,19 @@ if __name__ == '__main__':
     input_but_not_bd = must_to_be_bd - from_bd_metainfo
     res_metinfo = '\n'.join(input_but_not_bd)
 
-    get_bufr_from_stantion = [index.split(' - ')[0] for index in from_bd_metainfo if index]
+ #   get_bufr_from_stantion = [index.split(' - ')[0] for index in from_bd_metainfo if index]
+    get_bufr_from_stantion_12 = [index.split(' - ')[0] for index in from_bd_metainfo_yesterday_12 if index]
+    get_bufr_from_stantion_00 = [index.split(' - ')[0] for index in from_bd_metainfo_now_00 if index]
 
-    telegramma_get = []
-    telegramma_not_get = []
-    not_get_bufr_from_stantion = [telegramma_get.append(index) if index in get_bufr_from_stantion else telegramma_not_get.append(index) for index in str_list_station_RF.split(',')]
+
+ #   telegramma_get = []
+ #   telegramma_not_get = []
+    telegramma_not_get_12 = []
+    telegramma_not_get_00 = []
+
+ #   not_get_bufr_from_stantion = [telegramma_get.append(index) if index in get_bufr_from_stantion else telegramma_not_get.append(index) for index in str_list_station_RF.split(',')]
+    not_get_bufr_from_stantion_12 = [1 if index in get_bufr_from_stantion_12 else telegramma_not_get_12.append(index) for index in str_list_station_RF.split(',')]
+    not_get_bufr_from_stantion_00 = [2 if index in get_bufr_from_stantion_00 else telegramma_not_get_00.append(index) for index in str_list_station_RF.split(',')]
 
 
     res_last_h = '\n'.join(must_to_be_bd - from_bd_last_h)
@@ -97,17 +105,19 @@ if __name__ == '__main__':
     srok_12 = [index.split(' - ')[0] for index in from_bd_metainfo_yesterday_12]
     srok_00 = [index.split(' - ')[0] for index in from_bd_metainfo_now_00]
 
-    [telegramma_not_get_dict[str_srok12].append(index) for index in  telegramma_not_get if index not in srok_12]
-    [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get if index not in srok_00]
-    not_get_telegram_name_station_srok_12 = '; '.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok12] if index in index_name ])
-    not_get_telegram_name_station_srok_00 = '; '.join(['-'.join(index_name[index]) for index in telegramma_not_get_dict[str_srok00] if index in index_name ])
+    [telegramma_not_get_dict[str_srok12].append(index) for index in  telegramma_not_get_12 if index not in srok_12]
+    [telegramma_not_get_dict[str_srok00].append(index) for index in telegramma_not_get_00 if index not in srok_00]
+    not_get_telegram_name_station_srok_12 = '; '.join([index_name[index][0] for index in telegramma_not_get_dict[str_srok12] if index in index_name ])
+    not_get_telegram_name_station_srok_00 = '; '.join([index_name[index][0] for index in telegramma_not_get_dict[str_srok00] if index in index_name ])
+
 
 
     not_two_part_telegram = get_miss_two_part_telegamm(str_list_station_RF,year,month,day,lastnight,lastnight_month,lastnight_year)
 
-    res = f'За вчерашницй день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
-#    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{not_get_telegram_name_station_srok_00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
-    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12} - {str_srok00}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n\n'
+    res = f'За вчерашний день\nВ таблицу с метаданными не поступили данные со станций:\n{res_metinfo if res_metinfo else "ошибок не найдено"}\n{"*"*40}\nВ таблицу последних высот не поступили данные со станций:\n{res_last_h if res_last_h else "ошибок не найдено"}\n'
+    res += f'\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{not_get_telegram_name_station_srok_00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
+#ор    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok12]))}\n\nСрок {str_srok00}\n{not_get_telegram_name_station_srok_00}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n'
+#    res += f'\nBUFR получены со станций:\n{", ".join(sorted(telegramma_get))}\n\nBUFR НЕ получены со станций:\nСрок {str_srok12} - {str_srok00}\n{not_get_telegram_name_station_srok_12}\n{", ".join(sorted(telegramma_not_get_dict[str_srok00]))}\n\n'
     res += f'\nПолучена только одна часть телеграмм:\n{"".join(not_two_part_telegram)}'
 
     print(res)
